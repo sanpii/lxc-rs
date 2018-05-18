@@ -2,5 +2,19 @@
 name = "lxc-sys"
 version = "0.1.0"
 authors = ["Sanpi <sanpi@homecomputing.fr>"]
+description = "FFI bindings to lxc API"
+repository = "https://github.com/sanpii/lxc-rs.git"
+documentation = "https://docs.rs/lxc-rs"
+keywords = ["lxc"]
+license = "MIT"
+categories = ["external-ffi-bindings"]
 
 [dependencies]
+libc="0.2"
+
+[build-dependencies]
+bindgen = "0.36"
+
+[badges]
+travis-ci = { repository = "sanpii/lxc-rs" }
+gitlab = { repository = "sanpi/lxc-rs" }
