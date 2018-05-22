@@ -42,6 +42,18 @@ impl Container {
         )
     }
 
+    pub fn get(&self) -> Result<(), ()> {
+        let success = unsafe {
+             ::lxc_sys::lxc_container_get(self.inner)
+        };
+
+        if success == 1 {
+            Ok(())
+        } else {
+            Err(())
+        }
+    }
+
     pub fn is_defined(&self) -> bool {
         unsafe {
             (*self.inner).is_defined.unwrap()(self.inner)
