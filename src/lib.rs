@@ -2,6 +2,17 @@ extern crate lxc_sys;
 #[macro_use]
 extern crate bitflags;
 
+macro_rules! string {
+    ($e:expr) => {{
+        let buffer = ::std::ffi::CString::new($e).unwrap();
+        let ptr = buffer.as_ptr();
+
+        ::std::mem::forget(buffer);
+
+        ptr
+    }};
+}
+
 mod container;
 mod flags;
 
@@ -45,4 +56,16 @@ pub fn wait_states() -> Vec<String> {
     states.iter()
         .map(|e| str!(*e))
         .collect()
+}
+
+pub fn get_global_config_item(key: &str) -> Result<String, ()> {
+    let value = unsafe {
+        ::lxc_sys::lxc_get_global_config_item(string!(key))
+    };
+
+    if value == ::std::ptr::null() {
+        Err(())
+    } else {
+        Ok(str!(value))
+    }
 }

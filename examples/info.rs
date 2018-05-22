@@ -1,7 +1,9 @@
 extern crate lxc;
 
 fn main() {
-    println!("LXC version: {}\n", ::lxc::version());
+    println!("LXC version: {}", ::lxc::version());
+    println!("LXC path: {}", ::lxc::get_global_config_item("lxc.lxcpath").unwrap_or("?".to_string()));
+    println!();
 
     println!("Wait states:");
     for state in ::lxc::wait_states() {

@@ -1,16 +1,5 @@
 use std::ptr::{null, null_mut};
 
-macro_rules! string {
-    ($e:expr) => {{
-        let buffer = ::std::ffi::CString::new($e).unwrap();
-        let ptr = buffer.as_ptr();
-
-        ::std::mem::forget(buffer);
-
-        ptr
-    }};
-}
-
 macro_rules! opt_str {
     ($e:expr) => {{
         match $e {
