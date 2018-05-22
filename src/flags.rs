@@ -13,6 +13,17 @@ bitflags! {
 }
 
 bitflags! {
+    pub struct CloneFlags: i32 {
+        const KEEPBDEVTYPE = ::lxc_sys::LXC_CLONE_KEEPBDEVTYPE as i32;
+        const KEEPMACADDR = ::lxc_sys::LXC_CLONE_KEEPMACADDR as i32;
+        const KEEPNAME = ::lxc_sys::LXC_CLONE_KEEPNAME as i32;
+        const MAXFLAGS = ::lxc_sys::LXC_CLONE_MAXFLAGS as i32;
+        const MAYBE_SNAPSHOT = ::lxc_sys::LXC_CLONE_MAYBE_SNAPSHOT as i32;
+        const SNAPSHOT = ::lxc_sys::LXC_CLONE_SNAPSHOT as i32;
+    }
+}
+
+bitflags! {
     pub struct CreateFlags: i32 {
         const QUIET = ::lxc_sys::LXC_CREATE_QUIET as i32;
         const MAXFLAGS = ::lxc_sys::LXC_CREATE_MAXFLAGS as i32;
