@@ -1,0 +1,14 @@
+image: "rust:latest"
+
+.test: &test
+    before_script:
+        - apt update
+        - apt install lxc-dev libclang-dev gcc -y
+
+test:debug:
+    <<: *test
+    script: cargo test
+
+test:release:
+    <<: *test
+    script: cargo test --release
