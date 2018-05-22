@@ -1,6 +1,6 @@
 [package]
 name = "lxc-sys"
-version = "0.1.0"
+version = "0.1.1"
 authors = ["Sanpi <sanpi@homecomputing.fr>"]
 description = "FFI bindings to lxc API"
 repository = "https://github.com/sanpii/lxc-rs.git"
