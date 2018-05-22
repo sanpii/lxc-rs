@@ -1,6 +1,6 @@
 use std::ptr::{null, null_mut};
 
-macro_rules! str {
+macro_rules! string {
     ($e:expr) => {{
         let buffer = ::std::ffi::CString::new($e).unwrap();
         let ptr = buffer.as_ptr();
@@ -14,7 +14,7 @@ macro_rules! str {
 macro_rules! opt_str {
     ($e:expr) => {{
         match $e {
-            Some(value) => str!(value),
+            Some(value) => string!(value),
             None => null(),
         }
     }};
@@ -27,12 +27,12 @@ pub struct Container {
 impl Container {
     pub fn new(name: &str, config_path: Option<&::std::path::Path>) -> Result<Self, String> {
         let config_path = match config_path {
-            Some(path) => str!(path.to_str().unwrap()),
+            Some(path) => string!(path.to_str().unwrap()),
             None => null(),
         };
 
         let inner = unsafe {
-             ::lxc_sys::lxc_container_new(str!(name), config_path)
+             ::lxc_sys::lxc_container_new(string!(name), config_path)
         };
 
         Ok(
@@ -60,7 +60,14 @@ impl Container {
         }
     }
 
-    pub fn create(&self, template: &str, bdevtype: Option<&str>, specs: Option<&::lxc_sys::bdev_specs>, flags: super::CreateFlags, argv: &[&str]) -> Result<(), ()> {
+    pub fn create(
+        &self,
+        template: &str,
+        bdevtype: Option<&str>,
+        specs: Option<&::lxc_sys::bdev_specs>,
+        flags: super::CreateFlags,
+        argv: &[&str],
+    ) -> Result<(), ()> {
         let specs = match specs {
             // @TODO
             Some(specs) => null_mut(),
@@ -68,7 +75,7 @@ impl Container {
         };
 
         let mut argv: Vec<*const i8> = argv.iter()
-            .map(|e| str!(*e))
+            .map(|e| string!(*e))
             .collect();
 
         argv.push(null());
@@ -76,11 +83,11 @@ impl Container {
         let result = unsafe {
             (*self.inner).create.unwrap()(
                 self.inner,
-                str!(template),
+                string!(template),
                 opt_str!(bdevtype),
                 specs,
                 flags.bits(),
-                argv.as_ptr()
+                argv.as_ptr(),
             )
         };
 
@@ -96,7 +103,7 @@ impl Container {
             null()
         } else {
             let mut argv: Vec<*const i8> = argv.iter()
-                .map(|e| str!(*e))
+                .map(|e| string!(*e))
                 .collect();
 
             argv.push(null());
