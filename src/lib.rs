@@ -5,5 +5,5 @@ extern crate bitflags;
 mod flags;
 mod container;
 
-pub use self::flags::CreateFlags;
+pub use self::flags::{AttchFlags, CreateFlags};
 pub use self::container::Container;
