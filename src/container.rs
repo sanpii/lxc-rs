@@ -36,7 +36,7 @@ impl Container {
              ::lxc_sys::lxc_container_get(self.inner)
         };
 
-        if success == 1 {
+        if success == 0 {
             Ok(())
         } else {
             Err(())
