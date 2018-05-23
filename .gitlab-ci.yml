@@ -7,8 +7,8 @@ image: "rust:latest"
 
 test:debug:
     <<: *test
-    script: cargo test
+    script: cargo test --feature=v3_0
 
 test:release:
     <<: *test
-    script: cargo test --release
+    script: cargo test --feature=v3_0 --release

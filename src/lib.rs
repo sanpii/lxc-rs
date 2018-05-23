@@ -72,6 +72,7 @@ pub fn get_global_config_item(key: &str) -> Result<String, ()> {
     }
 }
 
+#[cfg(feature = "v2_0")]
 pub fn config_item_is_supported(key: &str) -> bool {
     unsafe {
         ::lxc_sys::lxc_config_item_is_supported(string!(key))

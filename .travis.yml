@@ -10,5 +10,5 @@ before_script:
     - sudo apt install lxc-dev libclang-dev
 
 script:
-    - cargo test
-    - cargo test --release
+    - cargo test --features=v1_0
+    - cargo test --features=v1_0 --release
