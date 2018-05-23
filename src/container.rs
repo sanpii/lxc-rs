@@ -1,12 +1,24 @@
 use std::ptr::{null, null_mut};
 
 macro_rules! opt_str {
-    ($e:expr) => {{
+    ($e:expr) => {
         match $e {
             Some(value) => string!(value),
             None => null(),
         }
-    }};
+    };
+}
+
+macro_rules! call {
+    ( $container:ident . $method:ident ) => {
+        call!($container.$method, )
+    };
+
+    ( $container:ident . $method:ident, $( $arg:expr ),* ) => {
+        unsafe {
+            (*$container.inner).$method.unwrap()($container.inner, $($arg,)*)
+        }
+    };
 }
 
 pub struct Container {
@@ -44,9 +56,7 @@ impl Container {
     }
 
     pub fn is_defined(&self) -> bool {
-        unsafe {
-            (*self.inner).is_defined.unwrap()(self.inner)
-        }
+        call!(self.is_defined)
     }
 
     pub fn create(
@@ -69,16 +79,14 @@ impl Container {
 
         argv.push(null());
 
-        let result = unsafe {
-            (*self.inner).create.unwrap()(
-                self.inner,
-                string!(template),
-                opt_str!(bdevtype),
-                specs,
-                flags.bits(),
-                argv.as_ptr(),
-            )
-        };
+        let result = call!(
+            self.create,
+            string!(template),
+            opt_str!(bdevtype),
+            specs,
+            flags.bits(),
+            argv.as_ptr()
+        );
 
         if result {
             Ok(())
@@ -100,9 +108,7 @@ impl Container {
             argv.as_ptr()
         };
 
-        let success = unsafe {
-            (*self.inner).start.unwrap()(self.inner, use_init as i32, argv_ptr)
-        };
+        let success = call!(self.start, use_init as i32, argv_ptr);
 
         if success {
             Ok(())
@@ -112,9 +118,10 @@ impl Container {
     }
 
     pub fn state(&self) -> String {
+        #[allow(unused_unsafe)]
         let state = unsafe {
             ::std::ffi::CStr::from_ptr(
-                (*self.inner).state.unwrap()(self.inner)
+                call!(self.state)
             )
         };
 
@@ -124,29 +131,21 @@ impl Container {
     }
 
     pub fn init_pid(&self) -> i32 {
-        unsafe {
-            (*self.inner).init_pid.unwrap()(self.inner)
-        }
+        call!(self.init_pid)
     }
 
     pub fn shutdown(&self, timeout: i32) -> Result<(), ()> {
-        let success = unsafe {
-            (*self.inner).shutdown.unwrap()(self.inner, timeout)
-        };
+        let success = call!(self.shutdown, timeout);
 
         if success {
             Ok(())
         } else {
             Err(())
         }
-
-
     }
 
     pub fn stop(&self) -> Result<(), ()> {
-        let success = unsafe {
-            (*self.inner).stop.unwrap()(self.inner)
-        };
+        let success = call!(self.stop);
 
         if success {
             Ok(())
@@ -156,9 +155,7 @@ impl Container {
     }
 
     pub fn destroy(&self) -> Result<(), ()> {
-        let success = unsafe {
-            (*self.inner).destroy.unwrap()(self.inner)
-        };
+        let success = call!(self.destroy);
 
         if success {
             Ok(())
