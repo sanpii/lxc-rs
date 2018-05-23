@@ -1,15 +1,37 @@
 use std::ptr::{null, null_mut};
 
 macro_rules! call {
-    ( $container:ident . $method:ident ) => {
-        call!($container.$method, )
-    };
-
-    ( $container:ident . $method:ident, $( $arg:expr ),* ) => {
+    ( $container:ident . $method:ident( $( $arg:expr ),* ) ) => {
         unsafe {
             (*$container.inner).$method.unwrap()($container.inner, $($arg,)*)
         }
     };
+
+    ( $container:ident . $method:ident( $( $arg:expr ),* ) -> c_str ) => {{
+        let result = unsafe {
+            (*$container.inner).$method.unwrap()($container.inner, $($arg,)*)
+        };
+
+        let str = unsafe {
+            ::std::ffi::CStr::from_ptr(result)
+        };
+
+        str.to_str()
+            .unwrap()
+            .to_string()
+    }};
+
+    ( $container:ident . $method:ident( $( $arg:expr ),* ) -> bool ) => {{
+        let result = unsafe {
+            (*$container.inner).$method.unwrap()($container.inner, $($arg,)*)
+        };
+
+        if result {
+            Ok(())
+        } else {
+            Err(())
+        }
+    }};
 }
 
 pub struct Container {
@@ -47,7 +69,7 @@ impl Container {
     }
 
     pub fn is_defined(&self) -> bool {
-        call!(self.is_defined)
+        call!(self.is_defined())
     }
 
     pub fn create(
@@ -70,23 +92,18 @@ impl Container {
 
         argv.push(null());
 
-        let result = call!(
-            self.create,
-            super::ffi::to_cstr(template),
-            match bdevtype {
-                Some(value) => super::ffi::to_cstr(value),
-                None => null(),
-            },
-            specs,
-            flags.bits(),
-            argv.as_ptr()
-        );
-
-        if result {
-            Ok(())
-        } else {
-            Err(())
-        }
+        call!(
+            self.create(
+                super::ffi::to_cstr(template),
+                match bdevtype {
+                    Some(value) => super::ffi::to_cstr(value),
+                    None => null(),
+                },
+                specs,
+                flags.bits(),
+                argv.as_ptr()
+            ) -> bool
+        )
     }
 
     pub fn start(&self, use_init: bool, argv: &[&str]) -> Result<(), ()> {
@@ -102,60 +119,27 @@ impl Container {
             argv.as_ptr()
         };
 
-        let success = call!(self.start, use_init as i32, argv_ptr);
-
-        if success {
-            Ok(())
-        } else {
-            Err(())
-        }
+        call!(self.start(use_init as i32, argv_ptr) -> bool)
     }
 
     pub fn state(&self) -> String {
-        #[allow(unused_unsafe)]
-        let state = unsafe {
-            ::std::ffi::CStr::from_ptr(
-                call!(self.state)
-            )
-        };
-
-        state.to_str()
-            .unwrap()
-            .to_string()
+        call!(self.state() -> c_str)
     }
 
     pub fn init_pid(&self) -> i32 {
-        call!(self.init_pid)
+        call!(self.init_pid())
     }
 
     pub fn shutdown(&self, timeout: i32) -> Result<(), ()> {
-        let success = call!(self.shutdown, timeout);
-
-        if success {
-            Ok(())
-        } else {
-            Err(())
-        }
+        call!(self.shutdown(timeout) -> bool)
     }
 
     pub fn stop(&self) -> Result<(), ()> {
-        let success = call!(self.stop);
-
-        if success {
-            Ok(())
-        } else {
-            Err(())
-        }
+        call!(self.stop() -> bool)
     }
 
     pub fn destroy(&self) -> Result<(), ()> {
-        let success = call!(self.destroy);
-
-        if success {
-            Ok(())
-        } else {
-            Err(())
-        }
+        call!(self.destroy() -> bool)
     }
 }
 
