@@ -1,31 +1,21 @@
-macro_rules! string {
-    ($e:expr) => {{
-        let buffer = ::std::ffi::CString::new($e).unwrap();
-        let ptr = buffer.as_ptr();
+use std::os::raw::c_char;
 
-        ::std::mem::forget(buffer);
+pub fn to_cstr(s: &str) -> *const c_char {
+    let buffer = ::std::ffi::CString::new(s)
+        .unwrap();
+    let ptr = buffer.as_ptr();
 
-        ptr
-    }};
+    ::std::mem::forget(buffer);
+
+    ptr
 }
 
-macro_rules! str {
-    ($e:expr) => {{
-        let buffer = unsafe {
-            ::std::ffi::CStr::from_ptr($e)
-        };
-
-        buffer.to_str()
-            .unwrap()
-            .to_string()
-    }};
-}
-
-macro_rules! opt_str {
-    ($e:expr) => {
-        match $e {
-            Some(value) => string!(value),
-            None => null(),
-        }
+pub fn to_string(s: *const c_char) -> String {
+    let buffer = unsafe {
+        ::std::ffi::CStr::from_ptr(s)
     };
+
+    buffer.to_str()
+        .unwrap()
+        .to_string()
 }

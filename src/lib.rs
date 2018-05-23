@@ -35,25 +35,25 @@ pub fn wait_states() -> Vec<String> {
     };
 
     states.iter()
-        .map(|e| str!(*e))
+        .map(|e| self::ffi::to_string(*e))
         .collect()
 }
 
 pub fn get_global_config_item(key: &str) -> Result<String, ()> {
     let value = unsafe {
-        ::lxc_sys::lxc_get_global_config_item(string!(key))
+        ::lxc_sys::lxc_get_global_config_item(self::ffi::to_cstr(key))
     };
 
     if value == ::std::ptr::null() {
         Err(())
     } else {
-        Ok(str!(value))
+        Ok(self::ffi::to_string(value))
     }
 }
 
 #[cfg(feature = "v2_0")]
 pub fn config_item_is_supported(key: &str) -> bool {
     unsafe {
-        ::lxc_sys::lxc_config_item_is_supported(string!(key))
+        ::lxc_sys::lxc_config_item_is_supported(self::ffi::to_cstr(key))
     }
 }

@@ -19,12 +19,12 @@ pub struct Container {
 impl Container {
     pub fn new(name: &str, config_path: Option<&::std::path::Path>) -> Result<Self, String> {
         let config_path = match config_path {
-            Some(path) => string!(path.to_str().unwrap()),
+            Some(path) => super::ffi::to_cstr(path.to_str().unwrap()),
             None => null(),
         };
 
         let inner = unsafe {
-             ::lxc_sys::lxc_container_new(string!(name), config_path)
+             ::lxc_sys::lxc_container_new(super::ffi::to_cstr(name), config_path)
         };
 
         Ok(
@@ -65,15 +65,18 @@ impl Container {
         };
 
         let mut argv: Vec<*const i8> = argv.iter()
-            .map(|e| string!(*e))
+            .map(|e| super::ffi::to_cstr(*e))
             .collect();
 
         argv.push(null());
 
         let result = call!(
             self.create,
-            string!(template),
-            opt_str!(bdevtype),
+            super::ffi::to_cstr(template),
+            match bdevtype {
+                Some(value) => super::ffi::to_cstr(value),
+                None => null(),
+            },
             specs,
             flags.bits(),
             argv.as_ptr()
@@ -91,7 +94,7 @@ impl Container {
             null()
         } else {
             let mut argv: Vec<*const i8> = argv.iter()
-                .map(|e| string!(*e))
+                .map(|e| super::ffi::to_cstr(*e))
                 .collect();
 
             argv.push(null());

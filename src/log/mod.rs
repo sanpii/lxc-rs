@@ -17,11 +17,11 @@ impl ::std::convert::Into<::lxc_sys::lxc_log> for Log {
         let level: String = self.level.into();
 
         ::lxc_sys::lxc_log {
-            name: string!(self.name),
-            lxcpath: string!(self.lxcpath),
-            file: string!(self.file),
-            level: string!(level),
-            prefix: string!(self.prefix),
+            name: ::lxc::ffi::to_cstr(self.name),
+            lxcpath: ::lxc::ffi::to_cstr(self.lxcpath),
+            file: ::lxc::ffi::to_cstr(self.file),
+            level: ::lxc::ffi::to_cstr(level),
+            prefix: ::lxc::ffi::to_cstr(self.prefix),
             quiet: self.quiet,
         }
     }
@@ -39,7 +39,14 @@ impl Log {
                 success = ::lxc_sys::lxc_log_init(&mut info);
             }
             #[cfg(not(feature = "v2_0"))]
-            success = ::lxc_sys::lxc_log_init(string!(info.name), string!(info.file), info.level.into(), string!(info.prefix), info.quiet, string!(info.lxcpath));
+            success = ::lxc_sys::lxc_log_init(
+                ::lxc::ffi::to_cstr(info.name),
+                ::lxc::ffi::to_cstr(info.file),
+                info.level.into(),
+                ::lxc::ffi::to_cstr(info.prefix),
+                info.quiet,
+                ::lxc::ffi::to_cstr(info.lxcpath)
+            );
 
             success
         };
