@@ -1,14 +1,5 @@
 use std::ptr::{null, null_mut};
 
-macro_rules! opt_str {
-    ($e:expr) => {
-        match $e {
-            Some(value) => string!(value),
-            None => null(),
-        }
-    };
-}
-
 macro_rules! call {
     ( $container:ident . $method:ident ) => {
         call!($container.$method, )
