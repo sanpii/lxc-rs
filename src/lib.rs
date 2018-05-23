@@ -13,9 +13,6 @@ macro_rules! string {
     }};
 }
 
-mod container;
-mod flags;
-
 macro_rules! str {
     ($e:expr) => {{
         let buffer = unsafe {
@@ -28,8 +25,13 @@ macro_rules! str {
     }};
 }
 
+mod container;
+mod flags;
+pub mod log;
+
 pub use self::container::Container;
 pub use self::flags::{AttchFlags, CloneFlags, CreateFlags};
+pub use self::log::Log;
 
 pub fn version() -> String {
     let version = unsafe {
