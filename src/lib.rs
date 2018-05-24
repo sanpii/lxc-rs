@@ -2,15 +2,22 @@ extern crate lxc_sys;
 #[macro_use]
 extern crate bitflags;
 
+mod attach;
+mod console;
+mod container;
 #[macro_use]
 mod ffi;
-mod container;
 mod flags;
 pub mod log;
+mod migrate;
 
 pub use self::container::Container;
 pub use self::flags::{AttchFlags, CloneFlags, CreateFlags};
 pub use self::log::Log;
+
+pub use ::lxc_sys::lxc_conf as Conf;
+pub use ::lxc_sys::lxc_lock as Lock;
+pub use ::lxc_sys::lxc_snapshot as Snapshot;
 
 pub fn version() -> String {
     let version = unsafe {
