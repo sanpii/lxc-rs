@@ -28,6 +28,9 @@ impl ::std::convert::Into<::lxc_sys::lxc_log> for Log {
 }
 
 impl Log {
+    /**
+     * Initialize the log.
+     */
     #[cfg(feature = "v2_0")]
     pub fn init(self) -> Result<(), ()> {
         let success = unsafe {
@@ -58,6 +61,9 @@ impl Log {
         }
     }
 
+    /**
+     * Close log file.
+     */
     pub fn close() {
         unsafe {
             ::lxc_sys::lxc_log_close()
