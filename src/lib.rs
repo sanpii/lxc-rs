@@ -2,7 +2,7 @@ extern crate lxc_sys;
 #[macro_use]
 extern crate bitflags;
 
-mod attach;
+pub mod attach;
 mod console;
 mod container;
 #[macro_use]
