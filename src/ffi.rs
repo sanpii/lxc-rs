@@ -9,6 +9,7 @@ pub fn to_cstr(s: &str) -> *const c_char {
     ptr
 }
 
+#[cfg(feature = "v1_1")]
 pub fn to_mut_cstr(s: &str) -> *mut c_char {
     let mut bytes = s.to_string().into_bytes();
     bytes.push(0);

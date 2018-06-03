@@ -1,4 +1,6 @@
-use super::ffi::{to_cstr, to_mut_cstr, to_nullable_cstr};
+#[cfg(feature = "v1_1")]
+use super::ffi::to_mut_cstr;
+use super::ffi::{to_cstr, to_nullable_cstr};
 use std::ptr::{null, null_mut};
 
 macro_rules! call {
@@ -427,30 +429,37 @@ impl Container {
         call!(self.remove_device_node(to_cstr(src_path), to_nullable_cstr(dest_path)) -> bool)
     }
 
+    #[cfg(feature = "v1_1")]
     pub fn attach_interface(&self, dev: &str, dst_dev: &str) -> Result<(), ()> {
         call!(self.attach_interface(to_cstr(dev), to_cstr(dst_dev)) -> bool)
     }
 
+    #[cfg(feature = "v1_1")]
     pub fn detach_interface(&self, dev: &str, dst_dev: &str) -> Result<(), ()> {
         call!(self.detach_interface(to_cstr(dev), to_cstr(dst_dev)) -> bool)
     }
 
+    #[cfg(feature = "v1_1")]
     pub fn checkpoint(&self, directory: &str, stop: bool, verbose: bool) -> Result<(), ()> {
         call!(self.checkpoint(to_mut_cstr(directory), stop, verbose) -> bool)
     }
 
+    #[cfg(feature = "v1_1")]
     pub fn restore(&self, directory: &str, verbose: bool) -> Result<(), ()> {
         call!(self.restore(to_mut_cstr(directory), verbose) -> bool)
     }
 
+    #[cfg(feature = "v1_1")]
     pub fn destroy_with_snapshots(&self) -> Result<(), ()> {
         call!(self.destroy_with_snapshots() -> bool)
     }
 
+    #[cfg(feature = "v1_1")]
     pub fn snapshot_destroy_all(&self) -> Result<(), ()> {
         call!(self.snapshot_destroy_all() -> bool)
     }
 
+    #[cfg(feature = "v2_0")]
     pub fn migrate(
         &self,
         cmd: u32,
@@ -460,10 +469,12 @@ impl Container {
         call!(self.migrate(cmd, opts, size as u32) -> int)
     }
 
+    #[cfg(feature = "v3_0")]
     pub fn console_log(&self, log: &mut super::console::Log) -> Result<(), ()> {
         call!(self.console_log(log) -> int)
     }
 
+    #[cfg(feature = "v3_0")]
     pub fn reboot2(&self, timetout: i32) -> Result<(), ()> {
         call!(self.reboot2(timetout) -> bool)
     }
