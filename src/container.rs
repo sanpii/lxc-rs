@@ -108,21 +108,13 @@ impl Container {
             None => null(),
         };
 
-        let inner = unsafe {
-             ::lxc_sys::lxc_container_new(to_cstr(name), config_path)
-        };
+        let inner = unsafe { ::lxc_sys::lxc_container_new(to_cstr(name), config_path) };
 
-        Ok(
-            Self {
-                inner,
-            }
-        )
+        Ok(Self { inner })
     }
 
     pub fn get(&self) -> Result<(), ()> {
-        let success = unsafe {
-             ::lxc_sys::lxc_container_get(self.inner)
-        };
+        let success = unsafe { ::lxc_sys::lxc_container_get(self.inner) };
 
         if success == 0 {
             Ok(())
@@ -179,9 +171,7 @@ impl Container {
         let argv_ptr = if argv.is_empty() {
             null()
         } else {
-            let mut argv: Vec<*const i8> = argv.iter()
-                .map(|e| to_cstr(*e))
-                .collect();
+            let mut argv: Vec<*const i8> = argv.iter().map(|e| to_cstr(*e)).collect();
 
             argv.push(null());
 
@@ -236,9 +226,7 @@ impl Container {
             None => null_mut(),
         };
 
-        let mut argv: Vec<*const i8> = argv.iter()
-            .map(|e| to_cstr(*e))
-            .collect();
+        let mut argv: Vec<*const i8> = argv.iter().map(|e| to_cstr(*e)).collect();
 
         argv.push(null());
 
@@ -282,8 +270,7 @@ impl Container {
 
         call!(self.get_config_item(to_cstr(key), retv.as_mut_ptr() as *mut i8, size));
 
-        String::from_utf8(retv)
-            .unwrap()
+        String::from_utf8(retv).unwrap()
     }
 
     pub fn get_running_config_item(&self, key: &str) -> String {
@@ -296,13 +283,11 @@ impl Container {
 
         call!(self.get_keys(to_cstr(key), retv.as_mut_ptr() as *mut i8, size));
 
-        String::from_utf8(retv)
-            .unwrap()
+        String::from_utf8(retv).unwrap()
     }
 
     pub fn get_interfaces(&self) -> Vec<String> {
-        call!(self.get_interfaces() -> [c_str])
-            .unwrap_or_default()
+        call!(self.get_interfaces() -> [c_str]).unwrap_or_default()
     }
 
     pub fn get_ips(&self, interfaces: &str, family: &str, scope: i32) -> Vec<String> {
@@ -316,8 +301,7 @@ impl Container {
 
         call!(self.get_cgroup_item(to_cstr(subsys), retv.as_mut_ptr() as *mut i8, size));
 
-        String::from_utf8(retv)
-            .unwrap()
+        String::from_utf8(retv).unwrap()
     }
 
     pub fn set_cgroup_item(&self, subsys: &str, value: &str) -> Result<(), ()> {
@@ -332,26 +316,54 @@ impl Container {
         call!(self.set_config_path(to_cstr(path)) -> bool)
     }
 
-    pub fn clone(&self, newname: &str, lxcpath: &str, flags: i32, bdevtype: &str, bdevdata: &str, newsize: u64, hookargs: Vec<String>) -> Self {
-        let inner = call!(self.clone(to_cstr(newname), to_cstr(lxcpath), flags, to_cstr(bdevtype), to_cstr(bdevdata), newsize, null_mut()));
+    pub fn clone(
+        &self,
+        newname: &str,
+        lxcpath: &str,
+        flags: i32,
+        bdevtype: &str,
+        bdevdata: &str,
+        newsize: u64,
+        hookargs: Vec<String>,
+    ) -> Self {
+        let inner = call!(self.clone(
+            to_cstr(newname),
+            to_cstr(lxcpath),
+            flags,
+            to_cstr(bdevtype),
+            to_cstr(bdevdata),
+            newsize,
+            null_mut()
+        ));
 
-        Self {
-            inner,
-        }
+        Self { inner }
     }
 
     pub fn console_getfd(&self, ttynum: &mut i32, masterfd: &mut i32) -> Result<(), ()> {
         call!(self.console_getfd(ttynum, masterfd) -> int)
     }
 
-    pub fn console(&self, ttynum: i32, stdinfd: i32, stdoutfd: i32, stderrfd: i32, escape: i32) -> Result<(), ()> {
+    pub fn console(
+        &self,
+        ttynum: i32,
+        stdinfd: i32,
+        stdoutfd: i32,
+        stderrfd: i32,
+        escape: i32,
+    ) -> Result<(), ()> {
         call!(self.console(ttynum, stdinfd, stdoutfd, stderrfd, escape) -> int)
     }
 
-    pub fn attach(&self, exec_function: super::attach::ExecFn, exec_payload: &mut ::std::os::raw::c_void, options: &mut super::attach::Options) -> Result<i32, ()> {
+    pub fn attach(
+        &self,
+        exec_function: super::attach::ExecFn,
+        exec_payload: &mut ::std::os::raw::c_void,
+        options: &mut super::attach::Options,
+    ) -> Result<i32, ()> {
         let mut attached_process = 0;
 
-        let result = call!(self.attach(exec_function, exec_payload, options, &mut attached_process) -> int);
+        let result =
+            call!(self.attach(exec_function, exec_payload, options, &mut attached_process) -> int);
 
         match result {
             Ok(()) => Ok(attached_process),
@@ -359,13 +371,16 @@ impl Container {
         }
     }
 
-    pub fn attach_run_wait(&self, options: &mut super::attach::Options, program: &str, argv: Vec<&str>) -> Result<i32, ()> {
+    pub fn attach_run_wait(
+        &self,
+        options: &mut super::attach::Options,
+        program: &str,
+        argv: Vec<&str>,
+    ) -> Result<i32, ()> {
         let argv_ptr = if argv.is_empty() {
             null()
         } else {
-            let mut argv: Vec<*const i8> = argv.iter()
-                .map(|e| to_cstr(*e))
-                .collect();
+            let mut argv: Vec<*const i8> = argv.iter().map(|e| to_cstr(*e)).collect();
 
             argv.push(null());
 
@@ -379,7 +394,6 @@ impl Container {
         } else {
             Ok(pid)
         }
-
     }
 
     pub fn snapshot(&self, commentfile: &str) -> Result<(), ()> {
@@ -437,7 +451,12 @@ impl Container {
         call!(self.snapshot_destroy_all() -> bool)
     }
 
-    pub fn migrate(&self, cmd: u32, opts: &mut super::migrate::Opts, size: usize) -> Result<(), ()> {
+    pub fn migrate(
+        &self,
+        cmd: u32,
+        opts: &mut super::migrate::Opts,
+        size: usize,
+    ) -> Result<(), ()> {
         call!(self.migrate(cmd, opts, size as u32) -> int)
     }
 

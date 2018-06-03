@@ -45,7 +45,7 @@ impl Log {
                 info.level.into(),
                 ::lxc::ffi::to_cstr(info.prefix),
                 info.quiet,
-                ::lxc::ffi::to_cstr(info.lxcpath)
+                ::lxc::ffi::to_cstr(info.lxcpath),
             );
 
             success
@@ -64,4 +64,3 @@ impl Log {
         }
     }
 }
-

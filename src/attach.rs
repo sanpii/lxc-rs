@@ -1,5 +1,5 @@
-pub use ::lxc_sys::lxc_attach_exec_t as ExecFn;
-pub use ::lxc_sys::lxc_attach_options_t as Options;
+pub use lxc_sys::lxc_attach_exec_t as ExecFn;
+pub use lxc_sys::lxc_attach_options_t as Options;
 
 bitflags! {
     pub struct EnvPolicy: i32 {
@@ -8,16 +8,10 @@ bitflags! {
     }
 }
 
-pub fn run_command(payload: &mut ::std::os::raw::c_void) -> i32
-{
-    unsafe {
-        ::lxc_sys::lxc_attach_run_command(payload)
-    }
+pub fn run_command(payload: &mut ::std::os::raw::c_void) -> i32 {
+    unsafe { ::lxc_sys::lxc_attach_run_command(payload) }
 }
 
-pub fn run_shell(payload: &mut ::std::os::raw::c_void) -> i32
-{
-    unsafe {
-        ::lxc_sys::lxc_attach_run_shell(payload)
-    }
+pub fn run_shell(payload: &mut ::std::os::raw::c_void) -> i32 {
+    unsafe { ::lxc_sys::lxc_attach_run_shell(payload) }
 }

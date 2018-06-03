@@ -12,11 +12,10 @@ fn main() {
     };
 
     #[cfg(feature = "v2_0")]
-    log.init()
-        .expect("Unable to init log");
+    log.init().expect("Unable to init log");
 
-    let c = ::lxc::Container::new("apicontainer", None)
-        .expect("Failed to setup lxc_container struct");
+    let c =
+        ::lxc::Container::new("apicontainer", None).expect("Failed to setup lxc_container struct");
 
     c.create(
         "download",
@@ -26,8 +25,7 @@ fn main() {
         &["-d", "ubuntu", "-r", "trusty", "-a", "i386"],
     ).expect("Failed to create container rootfs");
 
-    c.start(false, &[])
-        .expect("Failed to start the container");
+    c.start(false, &[]).expect("Failed to start the container");
 
     ::lxc::Log::close();
 }
