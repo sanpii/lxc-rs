@@ -70,7 +70,9 @@ pub fn get_global_config_item(key: &str) -> self::Result<String> {
  */
 #[cfg(feature = "v2_0")]
 pub fn config_item_is_supported(key: &str) -> bool {
-    unsafe { ::lxc_sys::lxc_config_item_is_supported(self::ffi::to_cstr(key)) }
+    unsafe {
+        ::lxc_sys::lxc_config_item_is_supported(self::ffi::to_cstr(key))
+    }
 }
 
 pub fn list_active_containers()

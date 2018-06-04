@@ -3,7 +3,7 @@ use super::ffi::to_mut_cstr;
 use super::ffi::{to_cstr, to_nullable_cstr};
 use std::ptr::{null, null_mut};
 
-macro_rules! call {
+macro_rules! get {
     ( $container:ident . $prop:ident ) => {{
         unsafe {
             (*$container.inner).$prop
@@ -11,19 +11,25 @@ macro_rules! call {
     }};
 
     ( $container:ident . $prop:ident -> c_str ) => {{
-        let result = unsafe {
-            (*$container.inner).$prop
-        };
+        let result = get!($container . $prop);
+
+        if result == null_mut() {
+            return None;
+        }
 
         let str = unsafe {
             ::std::ffi::CStr::from_ptr(result)
         };
 
-        str.to_str()
+        let s = str.to_str()
             .unwrap()
-            .to_string()
-    }};
+            .to_string();
 
+        Some(s)
+    }};
+}
+
+macro_rules! call {
     ( $container:ident . $method:ident( $( $arg:expr ),* ) -> [c_str] ) => {{
         let result = unsafe {
             (*$container.inner).$method.unwrap()($container.inner, $($arg,)*)
@@ -135,20 +141,32 @@ impl Container {
         }
     }
 
-    pub fn error_string(&self) -> String {
-        call!(self.error_string -> c_str)
+    /**
+     * Human-readable string representing last error.
+     */
+    pub fn error_string(&self) -> Option<String> {
+        get!(self.error_string -> c_str)
     }
 
+    /**
+     * Last error number.
+     */
     pub fn error_num(&self) -> i32 {
-        call!(self.error_num)
+        get!(self.error_num)
     }
 
+    /**
+     * Whether container wishes to be daemonized.
+     */
     pub fn daemonize(&self) -> bool {
-        call!(self.daemonize)
+        get!(self.daemonize)
     }
 
-    pub fn config_path(&self) -> String {
-        call!(self.config_path -> c_str)
+    /**
+     * Full path to configuration file.
+     */
+    pub fn config_path(&self) -> Option<String> {
+        get!(self.config_path -> c_str)
     }
 
     /**
