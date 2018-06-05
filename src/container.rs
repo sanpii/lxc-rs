@@ -13,19 +13,17 @@ macro_rules! get {
     ( $container:ident . $prop:ident -> c_str ) => {{
         let result = get!($container . $prop);
 
-        if result == null_mut() {
-            return None;
-        }
-
-        let str = unsafe {
-            ::std::ffi::CStr::from_ptr(result)
+        let str = if result == null_mut() {
+            ""
+        } else {
+            unsafe {
+                ::std::ffi::CStr::from_ptr(result)
+                    .to_str()
+                    .unwrap()
+            }
         };
 
-        let s = str.to_str()
-            .unwrap()
-            .to_string();
-
-        Some(s)
+        str.to_string()
     }};
 }
 
@@ -36,7 +34,7 @@ macro_rules! call {
         };
 
         if result == null_mut() {
-            Err(())
+            Err($container.last_error())
         } else {
             let slice = unsafe {
                 unimplemented!();
@@ -88,7 +86,7 @@ macro_rules! call {
         if result {
             Ok(())
         } else {
-            Err(())
+            Err($container.last_error())
         }
     }};
 
@@ -100,7 +98,7 @@ macro_rules! call {
         if result >= 0 {
             Ok(())
         } else {
-            Err(())
+            Err($container.last_error())
         }
     }};
 }
@@ -137,14 +135,14 @@ impl Container {
         if success == 0 {
             Ok(())
         } else {
-            Err(())
+            Err(self.last_error())
         }
     }
 
     /**
      * Human-readable string representing last error.
      */
-    pub fn error_string(&self) -> Option<String> {
+    pub fn error_string(&self) -> String {
         get!(self.error_string -> c_str)
     }
 
@@ -165,7 +163,7 @@ impl Container {
     /**
      * Full path to configuration file.
      */
-    pub fn config_path(&self) -> Option<String> {
+    pub fn config_path(&self) -> String {
         get!(self.config_path -> c_str)
     }
 
@@ -512,7 +510,7 @@ impl Container {
 
         match result {
             Ok(()) => Ok(attached_process),
-            Err(()) => Err(()),
+            Err(err) => Err(err),
         }
     }
 
@@ -538,7 +536,7 @@ impl Container {
         let pid = call!(self.attach_run_wait(options, to_cstr(program), argv_ptr));
 
         if pid == -1 {
-            Err(())
+            Err(self.last_error())
         } else {
             Ok(pid)
         }
@@ -678,6 +676,14 @@ impl Container {
     #[cfg(feature = "v3_0")]
     pub fn reboot2(&self, timetout: i32) -> super::Result<()> {
         call!(self.reboot2(timetout) -> bool)
+    }
+
+    fn last_error(&self) -> super::Error
+    {
+        (
+            get!(self.error_num),
+            get!(self.error_string -> c_str),
+        )
     }
 }
 

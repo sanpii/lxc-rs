@@ -19,7 +19,7 @@ bitflags! {
  *
  * Returns exit code program on success.
  */
-pub fn run_command(payload: &mut ::std::os::raw::c_void) -> super::Result<i32> {
+pub fn run_command(payload: &mut ::std::os::raw::c_void) -> Result<i32, ()> {
     let result = unsafe {
         ::lxc_sys::lxc_attach_run_command(payload)
     };

@@ -19,7 +19,8 @@ pub use lxc_sys::lxc_conf as Conf;
 pub use lxc_sys::lxc_lock as Lock;
 pub use lxc_sys::lxc_snapshot as Snapshot;
 
-pub type Result<T> = ::std::result::Result<T, ()>;
+pub type Error = (i32, String);
+pub type Result<T> = ::std::result::Result<T, Error>;
 
 /**
  * Determine version of LXC.
@@ -53,15 +54,15 @@ pub fn wait_states() -> Vec<String> {
 /**
  * Get the value for a global config key.
  */
-pub fn get_global_config_item(key: &str) -> self::Result<String> {
+pub fn get_global_config_item(key: &str) -> Option<String> {
     let value = unsafe {
         ::lxc_sys::lxc_get_global_config_item(self::ffi::to_cstr(key))
     };
 
     if value == ::std::ptr::null() {
-        Err(())
+        None
     } else {
-        Ok(self::ffi::to_string(value))
+        Some(self::ffi::to_string(value))
     }
 }
 
