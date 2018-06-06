@@ -297,12 +297,12 @@ impl Container {
         &self,
         template: &str,
         bdevtype: Option<&str>,
-        specs: Option<&::lxc_sys::bdev_specs>,
+        specs: Option<&mut ::lxc_sys::bdev_specs>,
         flags: super::CreateFlags,
         argv: &[&str],
     ) -> super::Result<()> {
         let specs = match specs {
-            Some(specs) => unimplemented!(),
+            Some(specs) => &mut *specs,
             None => null_mut(),
         };
 
