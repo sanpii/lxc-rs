@@ -680,10 +680,10 @@ impl Container {
 
     fn last_error(&self) -> super::Error
     {
-        (
-            get!(self.error_num),
-            get!(self.error_string -> c_str),
-        )
+        super::Error {
+            num: get!(self.error_num),
+            str: get!(self.error_string -> c_str),
+        }
     }
 }
 

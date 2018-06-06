@@ -19,7 +19,18 @@ pub use lxc_sys::lxc_conf as Conf;
 pub use lxc_sys::lxc_lock as Lock;
 pub use lxc_sys::lxc_snapshot as Snapshot;
 
-pub type Error = (i32, String);
+pub struct Error {
+    pub num: i32,
+    pub str: String,
+}
+
+
+impl ::std::fmt::Display for Error {
+    fn fmt(&self, f: &mut ::std::fmt::Formatter) -> ::std::fmt::Result {
+        write!(f, "{}", self.str)
+    }
+}
+
 pub type Result<T> = ::std::result::Result<T, Error>;
 
 /**
