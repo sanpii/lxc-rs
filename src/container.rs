@@ -13,7 +13,7 @@ macro_rules! get {
     ( $container:ident . $prop:ident -> c_str ) => {{
         let result = get!($container . $prop);
 
-        let str = if result == null_mut() {
+        let str = if result.is_null() {
             ""
         } else {
             unsafe {
@@ -33,7 +33,7 @@ macro_rules! call {
             (*$container.inner).$method.unwrap()($container.inner, $($arg,)*)
         };
 
-        if result == null_mut() {
+        if result.is_null() {
             Err($container.last_error())
         } else {
             let vec = super::ffi::vec_from_nta(result);
@@ -454,7 +454,7 @@ impl Container {
         bdevtype: &str,
         bdevdata: &str,
         newsize: u64,
-        hookargs: Vec<String>,
+        hookargs: &[String],
     ) -> Self {
         let inner = call!(self.clone(
             to_cstr(newname),
@@ -517,7 +517,7 @@ impl Container {
         &self,
         options: &mut super::attach::Options,
         program: &str,
-        argv: Vec<&str>,
+        argv: &[&str],
     ) -> super::Result<i32> {
         let argv_ptr = if argv.is_empty() {
             null()

@@ -70,7 +70,7 @@ pub fn get_global_config_item(key: &str) -> Option<String> {
         ::lxc_sys::lxc_get_global_config_item(self::ffi::to_cstr(key))
     };
 
-    if value == ::std::ptr::null() {
+    if value.is_null() {
         None
     } else {
         Some(self::ffi::to_string(value))
