@@ -19,11 +19,11 @@ pub use lxc_sys::lxc_conf as Conf;
 pub use lxc_sys::lxc_lock as Lock;
 pub use lxc_sys::lxc_snapshot as Snapshot;
 
+#[derive(Debug)]
 pub struct Error {
     pub num: i32,
     pub str: String,
 }
-
 
 impl ::std::fmt::Display for Error {
     fn fmt(&self, f: &mut ::std::fmt::Formatter) -> ::std::fmt::Result {
