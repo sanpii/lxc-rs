@@ -11,7 +11,7 @@ Add it to your dependencies:
 
 ```toml
 [dependencies]
-lxc = "^0.1"
+lxc = "^0.2"
 ```
 
 See [demo.rs](examples/demo.rs) for a complete example.
