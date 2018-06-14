@@ -37,3 +37,19 @@ pub fn to_string(s: *const c_char) -> String {
 
     buffer.to_str().unwrap().to_string()
 }
+
+pub fn vec_from_nta(raw: *mut *mut i8) -> Vec<*mut i8> {
+    let mut vec = Vec::new();
+
+    for x in 0.. {
+        unsafe {
+            if !(*raw.offset(x)).is_null() {
+                vec.push(*raw.offset(x));
+            } else {
+                break;
+            }
+        }
+    }
+
+    vec
+}

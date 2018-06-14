@@ -36,13 +36,9 @@ macro_rules! call {
         if result == null_mut() {
             Err($container.last_error())
         } else {
-            let slice = unsafe {
-                unimplemented!();
+            let vec = super::ffi::vec_from_nta(result);
 
-                ::std::slice::from_raw_parts(result, 1)
-            };
-
-            let vec = slice.iter()
+            let vec = vec.iter()
                 .map(|e| {
                     let str = unsafe {
                         ::std::ffi::CStr::from_ptr(*e)

@@ -21,6 +21,7 @@ fn main() {
 
     println!("Container state: {}", c.state());
     println!("Container PID: {}", c.init_pid());
+    println!("Interfaces: {:?}", c.get_interfaces());
 
     if c.shutdown(30).is_err() {
         println!("Failed to cleanly shutdown the container, forcing.");
