@@ -1,6 +1,6 @@
 [package]
 name = "lxc"
-version = "0.2.0"
+version = "0.2.1"
 authors = ["Sanpi <sanpi@homecomputing.fr>"]
 repository = "https://github.com/sanpii/lxc-rs.git"
 documentation = "https://docs.rs/lxc"
