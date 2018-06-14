@@ -456,6 +456,10 @@ impl Container {
         newsize: u64,
         hookargs: &[String],
     ) -> Self {
+        if !hookargs.is_empty() {
+            unimplemented!();
+        }
+
         let inner = call!(self.clone(
             to_cstr(newname),
             to_cstr(lxcpath),
