@@ -13,7 +13,7 @@ categories = ["external-ffi-bindings"]
 libc="0.2"
 
 [build-dependencies]
-bindgen = "0.38"
+bindgen = "0.48"
 
 [badges]
 travis-ci = { repository = "sanpii/lxc-rs" }
