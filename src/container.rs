@@ -1,6 +1,4 @@
-#[cfg(feature = "v1_1")]
-use super::ffi::to_mut_cstr;
-use super::ffi::{to_cstr, to_nullable_cstr};
+use super::ffi::{to_cstr, to_mut_cstr, to_nullable_cstr};
 use std::ptr::{null, null_mut};
 
 macro_rules! get {
@@ -17,7 +15,7 @@ macro_rules! get {
             ""
         } else {
             unsafe {
-                ::std::ffi::CStr::from_ptr(result)
+                std::ffi::CStr::from_ptr(result)
                     .to_str()
                     .unwrap()
             }
@@ -41,7 +39,7 @@ macro_rules! call {
             let vec = vec.iter()
                 .map(|e| {
                     let str = unsafe {
-                        ::std::ffi::CStr::from_ptr(*e)
+                        std::ffi::CStr::from_ptr(*e)
                     };
 
                     str.to_str()
@@ -66,7 +64,7 @@ macro_rules! call {
         };
 
         let str = unsafe {
-            ::std::ffi::CStr::from_ptr(result)
+            std::ffi::CStr::from_ptr(result)
         };
 
         str.to_str()
@@ -100,21 +98,21 @@ macro_rules! call {
 }
 
 pub struct Container {
-    inner: *mut ::lxc_sys::lxc_container,
+    inner: *mut lxc_sys::lxc_container,
 }
 
 impl Container {
     /**
      * Create a new container.
      */
-    pub fn new(name: &str, config_path: Option<&::std::path::Path>) -> ::std::result::Result<Self, String> {
+    pub fn new(name: &str, config_path: Option<&std::path::Path>) -> std::result::Result<Self, String> {
         let config_path = match config_path {
             Some(path) => to_cstr(path.to_str().unwrap()),
             None => null(),
         };
 
         let inner = unsafe {
-            ::lxc_sys::lxc_container_new(to_cstr(name), config_path)
+            lxc_sys::lxc_container_new(to_cstr(name), config_path)
         };
 
         Ok(Self { inner })
@@ -125,7 +123,7 @@ impl Container {
      */
     pub fn get(&self) -> super::Result<()> {
         let success = unsafe {
-            ::lxc_sys::lxc_container_get(self.inner)
+            lxc_sys::lxc_container_get(self.inner)
         };
 
         if success == 0 {
@@ -217,13 +215,13 @@ impl Container {
      */
     pub fn start(&self, use_init: bool, argv: &[&str]) -> super::Result<()> {
         let argv_ptr = if argv.is_empty() {
-            null()
+            null_mut()
         } else {
-            let mut argv: Vec<*const i8> = argv.iter().map(|e| to_cstr(*e)).collect();
+            let mut argv: Vec<*mut i8> = argv.iter().map(|e| to_mut_cstr(*e)).collect();
 
-            argv.push(null());
+            argv.push(null_mut());
 
-            argv.as_ptr()
+            argv.as_mut_ptr()
         };
 
         call!(self.start(use_init as i32, argv_ptr) -> bool)
@@ -293,7 +291,7 @@ impl Container {
         &self,
         template: &str,
         bdevtype: Option<&str>,
-        specs: Option<&mut ::lxc_sys::bdev_specs>,
+        specs: Option<&mut lxc_sys::bdev_specs>,
         flags: super::CreateFlags,
         argv: &[&str],
     ) -> super::Result<()> {
@@ -302,11 +300,11 @@ impl Container {
             None => null_mut(),
         };
 
-        let mut argv: Vec<*const i8> = argv.iter()
-            .map(|e| to_cstr(*e))
+        let mut argv: Vec<*mut i8> = argv.iter()
+            .map(|e| to_mut_cstr(*e))
             .collect();
 
-        argv.push(null());
+        argv.push(null_mut());
 
         call!(
             self.create(
@@ -500,7 +498,7 @@ impl Container {
     pub fn attach(
         &self,
         exec_function: super::attach::ExecFn,
-        exec_payload: &mut ::std::os::raw::c_void,
+        exec_payload: &mut std::os::raw::c_void,
         options: &mut super::attach::Options,
     ) -> super::Result<i32> {
         let mut attached_process = 0;
@@ -690,7 +688,7 @@ impl Container {
 impl Drop for Container {
     fn drop(&mut self) {
         unsafe {
-            ::lxc_sys::lxc_container_put(self.inner);
+            lxc_sys::lxc_container_put(self.inner);
         }
     }
 }

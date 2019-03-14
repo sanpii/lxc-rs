@@ -11,7 +11,7 @@ pub enum Level {
     Notset,
 }
 
-impl ::std::convert::Into<String> for Level {
+impl std::convert::Into<String> for Level {
     fn into(self) -> String {
         use self::Level::*;
 

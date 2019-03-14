@@ -8,6 +8,7 @@ keywords = ["lxc"]
 license = "MIT"
 categories = ["api-bindings"]
 description = "Linux Containers API"
+edition = "2018"
 
 [dependencies]
 bitflags = "1.0"

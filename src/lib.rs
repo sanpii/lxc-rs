@@ -1,7 +1,3 @@
-extern crate lxc_sys;
-#[macro_use]
-extern crate bitflags;
-
 pub mod attach;
 mod console;
 mod container;
