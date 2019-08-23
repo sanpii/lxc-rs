@@ -14,7 +14,7 @@ edition = "2018"
 libc="0.2"
 
 [build-dependencies]
-bindgen = "0.48"
+bindgen = "0.51"
 
 [badges]
 travis-ci = { repository = "sanpii/lxc-rs" }
