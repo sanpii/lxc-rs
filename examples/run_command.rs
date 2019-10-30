@@ -29,6 +29,7 @@ fn main() -> std::io::Result<()> {
         uid: 0,
         extra_keep_env: std::ptr::null_mut(),
         initial_cwd: std::ptr::null_mut(),
+        #[cfg(feature = "v3_0")]
         log_fd: std::io::stdout().as_raw_fd(),
         stdout_fd: std::io::stdout().as_raw_fd(),
         stderr_fd: std::io::stderr().as_raw_fd(),
