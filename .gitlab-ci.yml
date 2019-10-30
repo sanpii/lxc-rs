@@ -1,14 +1,26 @@
-image: "rust:latest"
-
 .test: &test
     before_script:
         - apt update
-        - apt install lxc-dev libclang-dev gcc -y
+        - apt install lxc-dev clang -y
+    script:
+        - VERSION=$(echo "$CI_JOB_NAME" | cut -d ':' -f 3)
+        - MODE=$(echo "$CI_JOB_NAME" | cut -d ':' -f 2)
+        - test "$MODE" = "release"
+            && cargo test --features=$VERSION --release
+            || cargo test --features=$VERSION
 
-test:debug:
+test:debug:v2_0:
+    image: "rust:stretch"
     <<: *test
-    script: cargo test --features=v3_0
 
-test:release:
+test:release:v2_0:
+    image: "rust:stretch"
     <<: *test
-    script: cargo test --features=v3_0 --release
+
+test:debug:v3_1:
+    image: "rust:buster"
+    <<: *test
+
+test:release:v3_1:
+    image: "rust:buster"
+    <<: *test
