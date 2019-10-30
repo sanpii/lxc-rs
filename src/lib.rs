@@ -83,14 +83,14 @@ pub fn config_item_is_supported(key: &str) -> bool {
     }
 }
 
-pub fn list_active_containers()
-{
+pub fn list_active_containers() {
+    unimplemented!();
 }
 
-pub fn list_all_containers()
-{
+pub fn list_all_containers() {
+    unimplemented!();
 }
 
-pub fn list_defined_containers()
-{
+pub fn list_defined_containers() {
+    unimplemented!();
 }
