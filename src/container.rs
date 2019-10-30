@@ -521,10 +521,10 @@ impl Container {
         program: &str,
         argv: &[&str],
     ) -> super::Result<i32> {
-        let mut argv_: Vec<*const i8> = argv.iter().map(|e| to_cstr(*e)).collect();
-        argv_.push(null());
+        let mut argv: Vec<*const i8> = argv.iter().map(|e| to_cstr(*e)).collect();
+        argv.push(null());
 
-        let pid = call!(self.attach_run_wait(options, to_cstr(program), argv_.as_ptr()));
+        let pid = call!(self.attach_run_wait(options, to_cstr(program), argv.as_ptr()));
 
         if pid == -1 {
             Err(self.last_error())
