@@ -1,14 +1,12 @@
-extern crate lxc_sys;
-
 use lxc_sys::lxc_container;
 use std::ptr::{null, null_mut};
 
 macro_rules! str {
     ($e:expr) => {{
-        let buffer = ::std::ffi::CString::new($e).unwrap();
+        let buffer = std::ffi::CString::new($e).unwrap();
         let ptr = buffer.as_ptr();
 
-        ::std::mem::forget(buffer);
+        std::mem::forget(buffer);
 
         ptr
     }};
@@ -17,7 +15,7 @@ macro_rules! str {
 fn main() {
     unsafe {
         /* Setup container struct */
-        let c = ::lxc_sys::lxc_container_new(str!("apicontainer"), null());
+        let c = lxc_sys::lxc_container_new(str!("apicontainer"), null());
 
         if c == null_mut() {
             panic(c, "Failed to setup lxc_container struct");
@@ -33,7 +31,7 @@ fn main() {
             str!("download"),
             null(),
             null_mut(),
-            ::lxc_sys::LXC_CREATE_QUIET as i32,
+            lxc_sys::LXC_CREATE_QUIET as i32,
             str!("-d"),
             str!("ubuntu"),
             str!("-r"),
@@ -52,7 +50,7 @@ fn main() {
 
         /* Query some information */
         let state = (*c).state.unwrap()(c);
-        println!("Container state: {:?}", ::std::ffi::CStr::from_ptr(state));
+        println!("Container state: {:?}", std::ffi::CStr::from_ptr(state));
         println!("Container PID: {}", (*c).init_pid.unwrap()(c));
 
         /* Stop the container */
@@ -68,11 +66,11 @@ fn main() {
             panic(c, "Failed to destroy the container.");
         }
 
-        ::lxc_sys::lxc_container_put(c);
+        lxc_sys::lxc_container_put(c);
     }
 }
 
 unsafe fn panic(c: *mut lxc_container, message: &str) -> ! {
-    ::lxc_sys::lxc_container_put(c);
+    lxc_sys::lxc_container_put(c);
     panic!("{}", message);
 }

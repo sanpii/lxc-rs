@@ -1,7 +1,5 @@
-extern crate lxc;
-
 fn main() {
-    let c = ::lxc::Container::new("apicontainer", None)
+    let c = lxc::Container::new("apicontainer", None)
         .expect("Failed to setup lxc_container struct");
 
     if c.is_defined() {
@@ -12,7 +10,7 @@ fn main() {
         "download",
         None,
         None,
-        ::lxc::CreateFlags::QUIET,
+        lxc::CreateFlags::QUIET,
         &["-d", "ubuntu", "-r", "trusty", "-a", "i386"],
     ).expect("Failed to create container rootfs");
 
