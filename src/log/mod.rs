@@ -1,5 +1,6 @@
 mod level;
 
+#[cfg(feature = "v2_1")]
 use crate::ffi::to_cstr;
 
 pub use self::level::Level;
@@ -13,7 +14,7 @@ pub struct Log {
     pub quiet: bool,
 }
 
-#[cfg(feature = "v2_0")]
+#[cfg(feature = "v2_1")]
 impl std::convert::Into<lxc_sys::lxc_log> for Log {
     fn into(self) -> lxc_sys::lxc_log {
         let level: String = self.level.into();
@@ -34,33 +35,46 @@ impl Log {
      * Initialize the log.
      */
     pub fn init(self) -> Result<(), ()> {
-        let success = unsafe {
-            let success;
-            #[cfg(feature = "v2_0")]
-            {
-                let mut info: lxc_sys::lxc_log = self.into();
-
-                success = lxc_sys::lxc_log_init(&mut info);
-            }
-            #[cfg(not(feature = "v2_0"))]
-            {
-                success = lxc_sys::lxc_log_init(
-                    to_cstr(&self.name),
-                    to_cstr(&self.file),
-                    self.level,
-                    to_cstr(&self.prefix),
-                    self.quiet,
-                    to_cstr(&self.lxcpath),
-                );
-            }
-
-            success
-        };
-
-        if success == 0 {
+        if self.log_init() == 0 {
             Ok(())
         } else {
             Err(())
+        }
+    }
+
+    #[cfg(not(feature = "v2_1"))]
+    fn log_init(self) -> i32 {
+        -1
+    }
+
+    #[cfg(any(
+        feature = "v2_1",
+        feature = "v3_1",
+        feature = "v3_2",
+    ))]
+    fn log_init(self) -> i32 {
+        let mut info: lxc_sys::lxc_log = self.into();
+
+        unsafe {
+            lxc_sys::lxc_log_init(&mut info)
+        }
+    }
+
+    #[cfg(all(
+        feature = "v3_0",
+        not(feature = "v3_1"),
+        not(feature = "v3_2"),
+    ))]
+    fn log_init(self) -> i32 {
+        unsafe {
+            lxc_sys::lxc_log_init(
+                to_cstr(&self.name),
+                to_cstr(&self.file),
+                self.level,
+                to_cstr(&self.prefix),
+                self.quiet,
+                to_cstr(&self.lxcpath),
+            )
         }
     }
 
@@ -68,6 +82,7 @@ impl Log {
      * Close log file.
      */
     pub fn close() {
+        #[cfg(feature = "v2_0")]
         unsafe {
             lxc_sys::lxc_log_close()
         }
