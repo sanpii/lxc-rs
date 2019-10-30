@@ -76,7 +76,7 @@ pub fn get_global_config_item(key: &str) -> Option<String> {
 /**
  * Check if the configuration item is supported by this LXC instance.
  */
-#[cfg(feature = "v2_0")]
+#[cfg(feature = "v2_1")]
 pub fn config_item_is_supported(key: &str) -> bool {
     unsafe {
         ::lxc_sys::lxc_config_item_is_supported(self::ffi::to_cstr(key))
