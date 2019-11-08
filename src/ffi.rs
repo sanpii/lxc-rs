@@ -15,6 +15,8 @@ pub fn to_mut_cstr(s: &str) -> *mut c_char {
 
     let mut c_chars: Vec<c_char> = bytes.iter().map(|b| *b as c_char).collect();
 
+    std::mem::forget(bytes);
+
     c_chars.as_mut_ptr()
 }
 
