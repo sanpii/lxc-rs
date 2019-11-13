@@ -358,13 +358,16 @@ impl Container {
     /**
      * Retrieve the value of a config item.
      */
-    pub fn get_config_item(&self, key: &str) -> String {
+    pub fn get_config_item(&self, key: &str) -> Option<String> {
         let size = call!(self.get_config_item(to_cstr(key), null_mut(), 0));
-        let mut retv = Vec::with_capacity(size as usize);
+        if size < 0 {
+            return None
+        }
+        let mut retv = vec![0; size as usize];
 
-        call!(self.get_config_item(to_cstr(key), retv.as_mut_ptr() as *mut i8, size));
+        call!(self.get_config_item(to_cstr(key), retv.as_mut_ptr() as *mut i8, size+1));
 
-        String::from_utf8(retv).unwrap()
+        Some(String::from_utf8(retv).unwrap())
     }
 
     /**
