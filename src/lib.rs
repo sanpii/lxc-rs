@@ -26,8 +26,7 @@ impl std::fmt::Display for Error {
     }
 }
 
-impl std::error::Error for Error {
-}
+impl std::error::Error for Error {}
 
 pub type Result<T> = std::result::Result<T, Error>;
 
@@ -35,9 +34,7 @@ pub type Result<T> = std::result::Result<T, Error>;
  * Determine version of LXC.
  */
 pub fn version() -> String {
-    let version = unsafe {
-        std::ffi::CStr::from_ptr(lxc_sys::lxc_get_version())
-    };
+    let version = unsafe { std::ffi::CStr::from_ptr(lxc_sys::lxc_get_version()) };
 
     version.to_str().unwrap().to_string()
 }
@@ -46,16 +43,12 @@ pub fn version() -> String {
  * Obtain a list of all container states.
  */
 pub fn wait_states() -> Vec<String> {
-    let size = unsafe {
-        lxc_sys::lxc_get_wait_states(std::ptr::null_mut())
-    };
+    let size = unsafe { lxc_sys::lxc_get_wait_states(std::ptr::null_mut()) };
 
     let mut states = Vec::new();
     states.resize(size as usize, std::ptr::null());
 
-    unsafe {
-        lxc_sys::lxc_get_wait_states(states.as_mut_ptr())
-    };
+    unsafe { lxc_sys::lxc_get_wait_states(states.as_mut_ptr()) };
 
     states.iter().map(|e| self::ffi::to_string(*e)).collect()
 }
@@ -64,9 +57,9 @@ pub fn wait_states() -> Vec<String> {
  * Get the value for a global config key.
  */
 pub fn get_global_config_item(key: &str) -> Option<String> {
-    let value = unsafe {
-        lxc_sys::lxc_get_global_config_item(self::ffi::to_cstr(key))
-    };
+    let c_key = self::ffi::to_cstr(key);
+    let value = unsafe { lxc_sys::lxc_get_global_config_item(c_key) };
+    self::ffi::release(c_key);
 
     if value.is_null() {
         None
@@ -80,9 +73,10 @@ pub fn get_global_config_item(key: &str) -> Option<String> {
  */
 #[cfg(feature = "v2_1")]
 pub fn config_item_is_supported(key: &str) -> bool {
-    unsafe {
-        lxc_sys::lxc_config_item_is_supported(self::ffi::to_cstr(key))
-    }
+    let c_key = self::ffi::to_cstr(key);
+    let r = unsafe { lxc_sys::lxc_config_item_is_supported(c_key) };
+    self::ffi::release(c_key);
+    r
 }
 
 pub fn list_active_containers() {

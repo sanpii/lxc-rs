@@ -1,24 +1,18 @@
-use super::ffi::{to_cstr, to_mut_cstr, to_nullable_cstr};
-use std::ptr::{null, null_mut};
+use super::ffi::{release, to_cstr, to_nullable_cstr};
+use std::ptr::null_mut;
 
 macro_rules! get {
     ( $container:ident . $prop:ident ) => {{
-        unsafe {
-            (*$container.inner).$prop
-        }
+        unsafe { (*$container.inner).$prop }
     }};
 
     ( $container:ident . $prop:ident -> c_str ) => {{
-        let result = get!($container . $prop);
+        let result = get!($container.$prop);
 
         let str = if result.is_null() {
             ""
         } else {
-            unsafe {
-                std::ffi::CStr::from_ptr(result)
-                    .to_str()
-                    .unwrap()
-            }
+            unsafe { std::ffi::CStr::from_ptr(result).to_str().unwrap() }
         };
 
         str.to_string()
@@ -105,15 +99,19 @@ impl Container {
     /**
      * Create a new container.
      */
-    pub fn new(name: &str, config_path: Option<&std::path::Path>) -> std::result::Result<Self, String> {
+    pub fn new(
+        name: &str,
+        config_path: Option<&std::path::Path>,
+    ) -> std::result::Result<Self, String> {
         let config_path = match config_path {
             Some(path) => to_cstr(path.to_str().unwrap()),
-            None => null(),
+            None => null_mut(),
         };
 
-        let inner = unsafe {
-            lxc_sys::lxc_container_new(to_cstr(name), config_path)
-        };
+        let c_name = to_cstr(name);
+        let inner = unsafe { lxc_sys::lxc_container_new(c_name, config_path) };
+        release(c_name);
+        release(config_path);
 
         Ok(Self { inner })
     }
@@ -122,9 +120,7 @@ impl Container {
      * Add a reference to the specified container.
      */
     pub fn get(&self) -> super::Result<()> {
-        let success = unsafe {
-            lxc_sys::lxc_container_get(self.inner)
-        };
+        let success = unsafe { lxc_sys::lxc_container_get(self.inner) };
 
         if success == 0 {
             Ok(())
@@ -207,24 +203,26 @@ impl Container {
      * Load the specified configuration for the container.
      */
     pub fn load_config(&self, alt_file: &str) -> super::Result<()> {
-        call!(self.load_config(to_cstr(alt_file)) -> bool)
+        let c_alt_file = to_cstr(alt_file);
+        let r = call!(self.load_config(c_alt_file) -> bool);
+        release(c_alt_file);
+        r
     }
 
     /**
      * Start the container.
      */
     pub fn start(&self, use_init: bool, argv: &[&str]) -> super::Result<()> {
-        let argv_ptr = if argv.is_empty() {
-            null_mut()
+        if argv.is_empty() {
+            call!(self.start(use_init as i32, null_mut()) -> bool)
         } else {
-            let mut argv: Vec<*mut i8> = argv.iter().map(|e| to_mut_cstr(*e)).collect();
-
+            let mut argv: Vec<*mut i8> = argv.iter().map(|e| to_cstr(*e)).collect();
             argv.push(null_mut());
 
-            argv.as_mut_ptr()
-        };
-
-        call!(self.start(use_init as i32, argv_ptr) -> bool)
+            let r = call!(self.start(use_init as i32, argv.as_mut_ptr()) -> bool);
+            let _ = argv.iter().map(|e| release(*e));
+            r
+        }
     }
 
     /**
@@ -260,14 +258,22 @@ impl Container {
      * Wait for container to reach a particular state.
      */
     pub fn wait(&self, state: &str, timeout: i32) -> super::Result<()> {
-        call!(self.wait(to_cstr(state), timeout) -> bool)
+        let c_state = to_cstr(state);
+        let r = call!(self.wait(c_state, timeout) -> bool);
+        release(c_state);
+        r
     }
 
     /**
      * Set a key/value configuration option.
      */
     pub fn set_config_item(&self, key: &str, value: &str) -> super::Result<()> {
-        call!(self.set_config_item(to_cstr(key), to_cstr(value)) -> bool)
+        let c_key = to_cstr(key);
+        let c_value = to_cstr(value);
+        let r = call!(self.set_config_item(c_key, c_value) -> bool);
+        release(c_key);
+        release(c_value);
+        r
     }
 
     /**
@@ -281,7 +287,10 @@ impl Container {
      * Save configuaration to a file.
      */
     pub fn save_config(&self, alt_file: &str) -> super::Result<()> {
-        call!(self.save_config(to_cstr(alt_file)) -> bool)
+        let c_alt_file = to_cstr(alt_file);
+        let r = call!(self.save_config(c_alt_file) -> bool);
+        release(c_alt_file);
+        r
     }
 
     /**
@@ -300,31 +309,38 @@ impl Container {
             None => null_mut(),
         };
 
-        let mut argv: Vec<*mut i8> = argv.iter()
-            .map(|e| to_mut_cstr(*e))
-            .collect();
+        let mut argv: Vec<*mut i8> = argv.iter().map(|e| to_cstr(*e)).collect();
 
         argv.push(null_mut());
 
-        call!(
+        let c_template = to_cstr(template);
+        let c_bdevtype = match bdevtype {
+            Some(value) => to_cstr(value),
+            None => null_mut(),
+        };
+        let r = call!(
             self.create(
-                to_cstr(template),
-                match bdevtype {
-                    Some(value) => to_cstr(value),
-                    None => null(),
-                },
+                c_template,
+                c_bdevtype,
                 specs,
                 flags.bits(),
                 argv.as_ptr()
             ) -> bool
-        )
+        );
+        release(c_template);
+        release(c_bdevtype);
+        let _ = argv.iter().map(|e| release(*e));
+        r
     }
 
     /**
      * Rename a container.
      */
     pub fn rename(&self, newname: &str) -> super::Result<()> {
-        call!(self.rename(to_cstr(newname)) -> bool)
+        let c_newname = to_cstr(newname);
+        let r = call!(self.rename(c_newname) -> bool);
+        release(c_newname);
+        r
     }
 
     /**
@@ -352,20 +368,25 @@ impl Container {
      * Clear a configuration item.
      */
     pub fn clear_config_item(&self, key: &str) -> super::Result<()> {
-        call!(self.clear_config_item(to_cstr(key)) -> bool)
+        let c_key = to_cstr(key);
+        let r = call!(self.clear_config_item(c_key) -> bool);
+        release(c_key);
+        r
     }
 
     /**
      * Retrieve the value of a config item.
      */
     pub fn get_config_item(&self, key: &str) -> Option<String> {
-        let size = call!(self.get_config_item(to_cstr(key), null_mut(), 0));
+        let c_key = to_cstr(key);
+        let size = call!(self.get_config_item(c_key, null_mut(), 0));
         if size < 0 {
-            return None
+            return None;
         }
         let mut retv = vec![0; size as usize];
 
-        call!(self.get_config_item(to_cstr(key), retv.as_mut_ptr() as *mut i8, size+1));
+        call!(self.get_config_item(c_key, retv.as_mut_ptr() as *mut i8, size + 1));
+        release(c_key);
 
         Some(String::from_utf8(retv).unwrap())
     }
@@ -374,17 +395,22 @@ impl Container {
      * Retrieve the value of a config item from running container.
      */
     pub fn get_running_config_item(&self, key: &str) -> String {
-        call!(self.get_running_config_item(to_cstr(key)) -> c_str)
+        let c_key = to_cstr(key);
+        let r = call!(self.get_running_config_item(c_key) -> c_str);
+        release(c_key);
+        r
     }
 
     /**
      * Retrieve a list of config item keys given a key prefix.
      */
     pub fn get_keys(&self, key: &str) -> String {
-        let size = call!(self.get_keys(to_cstr(key), null_mut(), 0));
+        let c_key = to_cstr(key);
+        let size = call!(self.get_keys(c_key, null_mut(), 0));
         let mut retv = Vec::with_capacity(size as usize);
 
-        call!(self.get_keys(to_cstr(key), retv.as_mut_ptr() as *mut i8, size));
+        call!(self.get_keys(c_key, retv.as_mut_ptr() as *mut i8, size));
+        release(c_key);
 
         String::from_utf8(retv).unwrap()
     }
@@ -400,18 +426,24 @@ impl Container {
      * Determine the list of container IP addresses.
      */
     pub fn get_ips(&self, interfaces: &str, family: &str, scope: i32) -> Vec<String> {
-        call!(self.get_ips(to_cstr(interfaces), to_cstr(family), scope) -> [c_str])
-            .unwrap_or_default()
+        let c_interfaces = to_cstr(interfaces);
+        let c_family = to_cstr(family);
+        let r = call!(self.get_ips(c_interfaces, c_family, scope) -> [c_str]).unwrap_or_default();
+        release(c_interfaces);
+        release(c_family);
+        r
     }
 
     /**
      * Retrieve the specified cgroup subsystem value for the container.
      */
     pub fn get_cgroup_item(&self, subsys: &str) -> String {
-        let size = call!(self.get_cgroup_item(to_cstr(subsys), null_mut(), 0));
+        let c_subsys = to_cstr(subsys);
+        let size = call!(self.get_cgroup_item(c_subsys, null_mut(), 0));
         let mut retv = Vec::with_capacity(size as usize);
 
-        call!(self.get_cgroup_item(to_cstr(subsys), retv.as_mut_ptr() as *mut i8, size));
+        call!(self.get_cgroup_item(c_subsys, retv.as_mut_ptr() as *mut i8, size));
+        release(c_subsys);
 
         String::from_utf8(retv).unwrap()
     }
@@ -420,7 +452,10 @@ impl Container {
      * Set the specified cgroup subsystem value for the container.
      */
     pub fn set_cgroup_item(&self, subsys: &str, value: &str) -> super::Result<()> {
-        call!(self.set_cgroup_item(to_cstr(subsys), to_cstr(value)) -> bool)
+        let c_subsys = to_cstr(subsys);
+        let r = call!(self.set_cgroup_item(c_subsys, to_cstr(value)) -> bool);
+        release(c_subsys);
+        r
     }
 
     /**
@@ -441,7 +476,10 @@ impl Container {
      * Set the full path to the containers configuration file.
      */
     pub fn set_config_path(&self, path: &str) -> super::Result<()> {
-        call!(self.set_config_path(to_cstr(path)) -> bool)
+        let c_path = to_cstr(path);
+        let r = call!(self.set_config_path(c_path) -> bool);
+        release(c_path);
+        r
     }
 
     /**
@@ -461,15 +499,23 @@ impl Container {
             unimplemented!();
         }
 
+        let c_newname = to_cstr(newname);
+        let c_lxcpath = to_cstr(lxcpath);
+        let c_bdevtype = to_cstr(bdevtype);
+        let c_bdevdata = to_cstr(bdevdata);
         let inner = call!(self.clone(
-            to_cstr(newname),
-            to_cstr(lxcpath),
+            c_newname,
+            c_lxcpath,
             flags,
-            to_cstr(bdevtype),
-            to_cstr(bdevdata),
+            c_bdevtype,
+            c_bdevdata,
             newsize,
             null_mut()
         ));
+        release(c_newname);
+        release(c_lxcpath);
+        release(c_bdevtype);
+        release(c_bdevdata);
 
         Self { inner }
     }
@@ -524,10 +570,14 @@ impl Container {
         program: &str,
         argv: &[&str],
     ) -> super::Result<i32> {
-        let mut argv: Vec<*const i8> = argv.iter().map(|e| to_cstr(*e)).collect();
-        argv.push(null());
+        let mut argv: Vec<*mut i8> = argv.iter().map(|e| to_cstr(*e)).collect();
+        argv.push(null_mut());
 
-        let pid = call!(self.attach_run_wait(options, to_cstr(program), argv.as_ptr()));
+        let c_program = to_cstr(program);
+        let pid =
+            call!(self.attach_run_wait(options, c_program, argv.as_ptr() as *const *const i8));
+        let _ = argv.iter().map(|e| release(*e));
+        release(c_program);
 
         if pid == -1 {
             Err(self.last_error())
@@ -544,7 +594,10 @@ impl Container {
      * name and `<n>` represents the zero-based snapshot number.
      */
     pub fn snapshot(&self, commentfile: &str) -> super::Result<()> {
-        call!(self.snapshot(to_cstr(commentfile)) -> int)
+        let c_commentfile = to_cstr(commentfile);
+        let r = call!(self.snapshot(c_commentfile) -> int);
+        release(c_commentfile);
+        r
     }
 
     /**
@@ -564,14 +617,22 @@ impl Container {
      * and restored in the `lxcpath` of the original container.
      */
     pub fn snapshot_restore(&self, snapname: &str, newname: &str) -> super::Result<()> {
-        call!(self.snapshot_restore(to_cstr(snapname), to_cstr(newname)) -> bool)
+        let c_snapname = to_cstr(snapname);
+        let c_newname = to_cstr(newname);
+        let r = call!(self.snapshot_restore(c_snapname, c_newname) -> bool);
+        release(c_snapname);
+        release(c_newname);
+        r
     }
 
     /**
      * Destroy the specified snapshot.
      */
     pub fn snapshot_destroy(&self, snapname: &str) -> super::Result<()> {
-        call!(self.snapshot_destroy(to_cstr(snapname)) -> bool)
+        let c_snapname = to_cstr(snapname);
+        let r = call!(self.snapshot_destroy(c_snapname) -> bool);
+        release(c_snapname);
+        r
     }
 
     /**
@@ -585,14 +646,20 @@ impl Container {
      * Add specified device to the container.
      */
     pub fn add_device_node(&self, src_path: &str, dest_path: Option<&str>) -> super::Result<()> {
-        call!(self.add_device_node(to_cstr(src_path), to_nullable_cstr(dest_path)) -> bool)
+        let c_src_path = to_cstr(src_path);
+        let r = call!(self.add_device_node(c_src_path, to_nullable_cstr(dest_path)) -> bool);
+        release(c_src_path);
+        r
     }
 
     /**
      * Remove specified device from the container.
      */
     pub fn remove_device_node(&self, src_path: &str, dest_path: Option<&str>) -> super::Result<()> {
-        call!(self.remove_device_node(to_cstr(src_path), to_nullable_cstr(dest_path)) -> bool)
+        let c_src_path = to_cstr(src_path);
+        let r = call!(self.remove_device_node(c_src_path, to_nullable_cstr(dest_path)) -> bool);
+        release(c_src_path);
+        r
     }
 
     /**
@@ -600,7 +667,12 @@ impl Container {
      */
     #[cfg(feature = "v1_1")]
     pub fn attach_interface(&self, dev: &str, dst_dev: &str) -> super::Result<()> {
-        call!(self.attach_interface(to_cstr(dev), to_cstr(dst_dev)) -> bool)
+        let c_dev = to_cstr(dev);
+        let c_dst_dev = to_cstr(dst_dev);
+        let r = call!(self.attach_interface(c_dev, c_dst_dev) -> bool);
+        release(c_dev);
+        release(c_dst_dev);
+        r
     }
 
     /**
@@ -608,7 +680,12 @@ impl Container {
      */
     #[cfg(feature = "v1_1")]
     pub fn detach_interface(&self, dev: &str, dst_dev: &str) -> super::Result<()> {
-        call!(self.detach_interface(to_cstr(dev), to_cstr(dst_dev)) -> bool)
+        let c_dev = to_cstr(dev);
+        let c_dst_dev = to_cstr(dst_dev);
+        let r = call!(self.detach_interface(c_dev, c_dst_dev) -> bool);
+        release(c_dev);
+        release(c_dst_dev);
+        r
     }
 
     /**
@@ -616,7 +693,10 @@ impl Container {
      */
     #[cfg(feature = "v1_1")]
     pub fn checkpoint(&self, directory: &str, stop: bool, verbose: bool) -> super::Result<()> {
-        call!(self.checkpoint(to_mut_cstr(directory), stop, verbose) -> bool)
+        let c_directory = to_cstr(directory);
+        let r = call!(self.checkpoint(c_directory, stop, verbose) -> bool);
+        release(c_directory);
+        r
     }
 
     /**
@@ -624,7 +704,10 @@ impl Container {
      */
     #[cfg(feature = "v1_1")]
     pub fn restore(&self, directory: &str, verbose: bool) -> super::Result<()> {
-        call!(self.restore(to_mut_cstr(directory), verbose) -> bool)
+        let c_directory = to_cstr(directory);
+        let r = call!(self.restore(c_directory, verbose) -> bool);
+        release(c_directory);
+        r
     }
 
     /**
@@ -672,8 +755,7 @@ impl Container {
         call!(self.reboot2(timetout) -> bool)
     }
 
-    fn last_error(&self) -> super::Error
-    {
+    fn last_error(&self) -> super::Error {
         super::Error {
             num: get!(self.error_num),
             str: get!(self.error_string -> c_str),
