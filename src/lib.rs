@@ -26,6 +26,9 @@ impl std::fmt::Display for Error {
     }
 }
 
+impl std::error::Error for Error {
+}
+
 pub type Result<T> = std::result::Result<T, Error>;
 
 /**
