@@ -1,8 +1,8 @@
 [package]
 name = "lxc"
 version = "0.3.0"
-authors = ["Sanpi <sanpi@homecomputing.fr>"]
-repository = "https://github.com/sanpii/lxc-rs.git"
+authors = ["Sanpi <sanpi@homecomputing.fr>", "Evgenii Lepikhin <e.lepikhin@corp.mail.ru>" ]
+repository = "https://github.com/johnlepikhin/lxc-rs.git"
 documentation = "https://docs.rs/lxc"
 keywords = ["lxc"]
 license = "MIT"
