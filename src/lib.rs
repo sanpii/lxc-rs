@@ -1,3 +1,5 @@
+#![warn(rust_2018_idioms)]
+
 pub mod attach;
 mod console;
 mod container;
@@ -21,7 +23,7 @@ pub struct Error {
 }
 
 impl std::fmt::Display for Error {
-    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         write!(f, "{}", self.str)
     }
 }
