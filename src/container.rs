@@ -3,22 +3,16 @@ use std::ptr::{null, null_mut};
 
 macro_rules! get {
     ( $container:ident . $prop:ident ) => {{
-        unsafe {
-            (*$container.inner).$prop
-        }
+        unsafe { (*$container.inner).$prop }
     }};
 
     ( $container:ident . $prop:ident -> c_str ) => {{
-        let result = get!($container . $prop);
+        let result = get!($container.$prop);
 
         let str = if result.is_null() {
             ""
         } else {
-            unsafe {
-                std::ffi::CStr::from_ptr(result)
-                    .to_str()
-                    .unwrap()
-            }
+            unsafe { std::ffi::CStr::from_ptr(result).to_str().unwrap() }
         };
 
         str.to_string()
@@ -105,15 +99,16 @@ impl Container {
     /**
      * Create a new container.
      */
-    pub fn new(name: &str, config_path: Option<&std::path::Path>) -> std::result::Result<Self, String> {
+    pub fn new(
+        name: &str,
+        config_path: Option<&std::path::Path>,
+    ) -> std::result::Result<Self, String> {
         let config_path = match config_path {
             Some(path) => to_cstr(path.to_str().unwrap()),
             None => null(),
         };
 
-        let inner = unsafe {
-            lxc_sys::lxc_container_new(to_cstr(name), config_path)
-        };
+        let inner = unsafe { lxc_sys::lxc_container_new(to_cstr(name), config_path) };
 
         Ok(Self { inner })
     }
@@ -122,9 +117,7 @@ impl Container {
      * Add a reference to the specified container.
      */
     pub fn get(&self) -> super::Result<()> {
-        let success = unsafe {
-            lxc_sys::lxc_container_get(self.inner)
-        };
+        let success = unsafe { lxc_sys::lxc_container_get(self.inner) };
 
         if success == 0 {
             Ok(())
@@ -300,9 +293,7 @@ impl Container {
             None => null_mut(),
         };
 
-        let mut argv: Vec<*mut i8> = argv.iter()
-            .map(|e| to_mut_cstr(*e))
-            .collect();
+        let mut argv: Vec<*mut i8> = argv.iter().map(|e| to_mut_cstr(*e)).collect();
 
         argv.push(null_mut());
 
@@ -361,11 +352,11 @@ impl Container {
     pub fn get_config_item(&self, key: &str) -> Option<String> {
         let size = call!(self.get_config_item(to_cstr(key), null_mut(), 0));
         if size < 0 {
-            return None
+            return None;
         }
         let mut retv = vec![0; size as usize];
 
-        call!(self.get_config_item(to_cstr(key), retv.as_mut_ptr() as *mut i8, size+1));
+        call!(self.get_config_item(to_cstr(key), retv.as_mut_ptr() as *mut i8, size + 1));
 
         Some(String::from_utf8(retv).unwrap())
     }
@@ -672,8 +663,7 @@ impl Container {
         call!(self.reboot2(timetout) -> bool)
     }
 
-    fn last_error(&self) -> super::Error
-    {
+    fn last_error(&self) -> super::Error {
         super::Error {
             num: get!(self.error_num),
             str: get!(self.error_string -> c_str),

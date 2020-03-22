@@ -21,7 +21,8 @@ fn main() {
         None,
         lxc::CreateFlags::QUIET,
         &["-d", "ubuntu", "-r", "trusty", "-a", "i386"],
-    ).expect("Failed to create container rootfs");
+    )
+    .expect("Failed to create container rootfs");
 
     c.start(false, &[]).expect("Failed to start the container");
 
