@@ -2,18 +2,16 @@ fn main() {
     let c =
         lxc::Container::new("apicontainer", None).expect("Failed to setup lxc_container struct");
 
-    if c.is_defined() {
-        panic!("Container already exists");
+    if !c.is_defined() {
+        c.create(
+            "download",
+            None,
+            None,
+            lxc::CreateFlags::QUIET,
+            &["-d", "ubuntu", "-r", "trusty", "-a", "i386"],
+        )
+        .expect("Failed to create container rootfs");
     }
-
-    c.create(
-        "download",
-        None,
-        None,
-        lxc::CreateFlags::QUIET,
-        &["-d", "ubuntu", "-r", "trusty", "-a", "i386"],
-    )
-    .expect("Failed to create container rootfs");
 
     c.start(false, &[]).expect("Failed to start the container");
 

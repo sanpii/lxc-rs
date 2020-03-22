@@ -59,7 +59,7 @@ pub fn wait_states() -> Vec<String> {
  * Get the value for a global config key.
  */
 pub fn get_global_config_item(key: &str) -> Option<String> {
-    let value = unsafe { lxc_sys::lxc_get_global_config_item(self::ffi::to_cstr(key)) };
+    let value = unsafe { lxc_sys::lxc_get_global_config_item(self::ffi::to_cstr(key).as_ptr()) };
 
     if value.is_null() {
         None
@@ -73,7 +73,7 @@ pub fn get_global_config_item(key: &str) -> Option<String> {
  */
 #[cfg(feature = "v2_1")]
 pub fn config_item_is_supported(key: &str) -> bool {
-    unsafe { lxc_sys::lxc_config_item_is_supported(self::ffi::to_cstr(key)) }
+    unsafe { lxc_sys::lxc_config_item_is_supported(self::ffi::to_cstr(key).as_ptr()) }
 }
 
 pub fn list_active_containers() {
