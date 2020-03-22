@@ -3,19 +3,14 @@ use std::ptr::{null, null_mut};
 
 macro_rules! str {
     ($e:expr) => {{
-        let buffer = std::ffi::CString::new($e).unwrap();
-        let ptr = buffer.as_ptr();
-
-        std::mem::forget(buffer);
-
-        ptr
+        std::ffi::CString::new($e).unwrap()
     }};
 }
 
 fn main() {
     unsafe {
         /* Setup container struct */
-        let c = lxc_sys::lxc_container_new(str!("apicontainer"), null());
+        let c = lxc_sys::lxc_container_new(str!("apicontainer").as_ptr(), null());
 
         if c == null_mut() {
             panic(c, "Failed to setup lxc_container struct");
@@ -28,16 +23,16 @@ fn main() {
         /* Create the container */
         if !(*c).createl.unwrap()(
             c,
-            str!("download"),
+            str!("download").as_ptr(),
             null(),
             null_mut(),
             lxc_sys::LXC_CREATE_QUIET as i32,
-            str!("-d"),
-            str!("ubuntu"),
-            str!("-r"),
-            str!("trusty"),
-            str!("-a"),
-            str!("i386"),
+            str!("-d").as_ptr(),
+            str!("ubuntu").as_ptr(),
+            str!("-r").as_ptr(),
+            str!("trusty").as_ptr(),
+            str!("-a").as_ptr(),
+            str!("i386").as_ptr(),
             null() as *const i8,
         ) {
             panic(c, "Failed to create container rootfs");
