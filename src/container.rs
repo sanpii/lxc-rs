@@ -685,6 +685,14 @@ impl Container {
         call!(self.umount(to_cstr(target).as_ptr(), mountflags, mnt) -> int)
     }
 
+    /**
+     * Retrieve a file descriptor for the container's seccomp filter.
+     */
+    #[cfg(feature = "v3_2")]
+    pub fn seccomp_notify_fd(&self) -> i32 {
+        call!(self.seccomp_notify_fd())
+    }
+
     fn last_error(&self) -> super::Error {
         super::Error {
             num: get!(self.error_num),
