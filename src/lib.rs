@@ -14,6 +14,7 @@ pub use self::log::Log;
 
 pub use lxc_sys::lxc_conf as Conf;
 pub use lxc_sys::lxc_lock as Lock;
+#[cfg(feature = "v3_1")]
 pub use lxc_sys::lxc_mount as Mount;
 pub use lxc_sys::lxc_snapshot as Snapshot;
 
