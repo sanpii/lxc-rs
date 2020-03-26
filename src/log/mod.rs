@@ -20,11 +20,11 @@ impl std::convert::Into<lxc_sys::lxc_log> for Log {
         let level: String = self.level.into();
 
         lxc_sys::lxc_log {
-            name: to_cstr(&self.name),
-            lxcpath: to_cstr(&self.lxcpath),
-            file: to_cstr(&self.file),
-            level: to_cstr(&level),
-            prefix: to_cstr(&self.prefix),
+            name: to_cstr(&self.name).as_ptr(),
+            lxcpath: to_cstr(&self.lxcpath).as_ptr(),
+            file: to_cstr(&self.file).as_ptr(),
+            level: to_cstr(&level).as_ptr(),
+            prefix: to_cstr(&self.prefix).as_ptr(),
             quiet: self.quiet,
         }
     }

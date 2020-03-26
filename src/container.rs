@@ -1,4 +1,4 @@
-use super::ffi::to_cstr;
+use super::ffi::{to_cstr, to_mut_cstr};
 use std::ptr::{null, null_mut};
 
 macro_rules! get {
@@ -613,7 +613,7 @@ impl Container {
      */
     #[cfg(feature = "v1_1")]
     pub fn checkpoint(&self, directory: &str, stop: bool, verbose: bool) -> super::Result<()> {
-        call!(self.checkpoint(to_cstr(directory), stop, verbose) -> bool)
+        call!(self.checkpoint(to_mut_cstr(directory).as_mut_ptr(), stop, verbose) -> bool)
     }
 
     /**
@@ -621,7 +621,7 @@ impl Container {
      */
     #[cfg(feature = "v1_1")]
     pub fn restore(&self, directory: &str, verbose: bool) -> super::Result<()> {
-        call!(self.restore(to_cstr(directory), verbose) -> bool)
+        call!(self.restore(to_mut_cstr(directory).as_mut_ptr(), verbose) -> bool)
     }
 
     /**
