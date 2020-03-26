@@ -47,25 +47,11 @@ impl Log {
         -1
     }
 
-    #[cfg(any(all(feature = "v2_1", not(feature = "v3_0")), feature = "v3_1"))]
+    #[cfg(feature = "v2_1")]
     fn log_init(self) -> i32 {
         let mut info: lxc_sys::lxc_log = self.into();
 
         unsafe { lxc_sys::lxc_log_init(&mut info) }
-    }
-
-    #[cfg(all(feature = "v3_0", not(feature = "v3_1")))]
-    fn log_init(self) -> i32 {
-        unsafe {
-            lxc_sys::lxc_log_init(
-                cstr!(&self.name),
-                cstr!(&self.file),
-                self.level,
-                cstr!(&self.prefix),
-                self.quiet,
-                cstr!(&self.lxcpath),
-            )
-        }
     }
 
     /**
