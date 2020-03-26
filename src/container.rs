@@ -693,6 +693,14 @@ impl Container {
         call!(self.seccomp_notify_fd())
     }
 
+    /**
+     * Retrieve a pidfd for the container's init process.
+     */
+    #[cfg(feature = "v4_0")]
+    pub fn init_pidfd(&self) -> i32 {
+        call!(self.init_pidfd())
+    }
+
     fn last_error(&self) -> super::Error {
         super::Error {
             num: get!(self.error_num),
