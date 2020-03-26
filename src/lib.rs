@@ -14,6 +14,7 @@ pub use self::log::Log;
 
 pub use lxc_sys::lxc_conf as Conf;
 pub use lxc_sys::lxc_lock as Lock;
+pub use lxc_sys::lxc_mount as Mount;
 pub use lxc_sys::lxc_snapshot as Snapshot;
 
 #[derive(Debug)]

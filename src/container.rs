@@ -669,6 +669,22 @@ impl Container {
         call!(self.reboot2(timetout) -> bool)
     }
 
+    /**
+     * Mount the host's path `source` onto the container's path `target`.
+     */
+    #[cfg(feature = "v3_1")]
+    pub fn mount(&self, source: &str, target: &str, filesystemtype: &str, mountflags: u64, data: &std::os::raw::c_void, mnt: &mut crate::Mount) -> super::Result<()> {
+        call!(self.mount(to_cstr(source).as_ptr(), to_cstr(target).as_ptr(), to_cstr(filesystemtype).as_ptr(), mountflags, data, mnt) -> int)
+    }
+
+    /**
+     * Unmount the container's path `target`.
+     */
+    #[cfg(feature = "v3_1")]
+    pub fn umount(&self, target: &str, mountflags: u64, mnt: &mut crate::Mount) -> super::Result<()> {
+        call!(self.umount(to_cstr(target).as_ptr(), mountflags, mnt) -> int)
+    }
+
     fn last_error(&self) -> super::Error {
         super::Error {
             num: get!(self.error_num),
