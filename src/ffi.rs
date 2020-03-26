@@ -11,7 +11,7 @@ macro_rules! cstr {
     };
 }
 
-#[cfg(feature = "v2_0")]
+#[cfg(feature = "v1_1")]
 pub fn to_mut_cstr(s: &str) -> Vec<c_char> {
     let mut bytes = s.to_string().into_bytes();
     bytes.push(0);
