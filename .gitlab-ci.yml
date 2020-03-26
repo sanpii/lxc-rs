@@ -1,9 +1,12 @@
 image: "rust:latest"
 
-.test: &test
+stages:
+    - lint
+    - test
+
+.common: &common
     before_script:
         - VERSION=$(echo "$CI_JOB_NAME" | cut -d ':' -f 2)
-
         - apt update
         - apt install lxc-dev clang -y
 
@@ -13,6 +16,41 @@ image: "rust:latest"
         - ./autogen.sh
         - ./configure
         - cp src/lxc/attach_options.h src/lxc/lxccontainer.h src/lxc/version.h /usr/include/lxc
+
+.clippy: &clippy
+    <<: *common
+    stage: lint
+    script:
+        - rustup component add clippy
+        - cargo clippy --features="v${VERSION/./_}"
+
+clippy:1.0:
+    <<: *clippy
+
+clippy:1.1:
+    <<: *clippy
+
+clippy:2.0:
+    <<: *clippy
+
+clippy:2.1:
+    <<: *clippy
+
+clippy:3.0:
+    <<: *clippy
+
+clippy:3.1:
+    <<: *clippy
+
+clippy:3.2:
+    <<: *clippy
+
+clippy:4.0:
+    <<: *clippy
+
+.test: &test
+    <<: *common
+    stage: test
     script:
         - FEATURE="v${VERSION/./_}"
         - cargo test --features=$FEATURE --release
