@@ -1,7 +1,7 @@
 mod level;
 
 #[cfg(feature = "v2_1")]
-use crate::ffi::to_cstr;
+use crate::cstr;
 
 pub use self::level::Level;
 
@@ -20,11 +20,11 @@ impl std::convert::Into<lxc_sys::lxc_log> for Log {
         let level: String = self.level.into();
 
         lxc_sys::lxc_log {
-            name: to_cstr(&self.name).as_ptr(),
-            lxcpath: to_cstr(&self.lxcpath).as_ptr(),
-            file: to_cstr(&self.file).as_ptr(),
-            level: to_cstr(&level).as_ptr(),
-            prefix: to_cstr(&self.prefix).as_ptr(),
+            name: cstr!(&self.name),
+            lxcpath: cstr!(&self.lxcpath),
+            file: cstr!(&self.file),
+            level: cstr!(&level),
+            prefix: cstr!(&self.prefix),
             quiet: self.quiet,
         }
     }
@@ -58,12 +58,12 @@ impl Log {
     fn log_init(self) -> i32 {
         unsafe {
             lxc_sys::lxc_log_init(
-                to_cstr(&self.name),
-                to_cstr(&self.file),
+                cstr!(&self.name),
+                cstr!(&self.file),
                 self.level,
-                to_cstr(&self.prefix),
+                cstr!(&self.prefix),
                 self.quiet,
-                to_cstr(&self.lxcpath),
+                cstr!(&self.lxcpath),
             )
         }
     }

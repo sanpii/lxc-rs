@@ -4,6 +4,13 @@ pub fn to_cstr(s: &str) -> std::ffi::CString {
     std::ffi::CString::new(s).unwrap()
 }
 
+#[macro_export]
+macro_rules! cstr {
+    ( $s:expr ) => {
+        $crate::ffi::to_cstr($s).as_ptr()
+    };
+}
+
 #[cfg(feature = "v2_0")]
 pub fn to_mut_cstr(s: &str) -> Vec<c_char> {
     let mut bytes = s.to_string().into_bytes();
