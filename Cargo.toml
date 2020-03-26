@@ -28,5 +28,4 @@ v3_2 = ["v3_1"]
 v4_0 = ["v3_2"]
 
 [badges]
-travis-ci = { repository = "sanpii/lxc-rs" }
 gitlab = { repository = "sanpi/lxc-rs" }
