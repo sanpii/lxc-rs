@@ -351,11 +351,7 @@ impl Container {
         }
         let mut retv = vec![0; size as usize];
 
-        call!(self.get_config_item(
-            cstr!(key),
-            retv.as_mut_ptr() as *mut i8,
-            size + 1
-        ));
+        call!(self.get_config_item(cstr!(key), retv.as_mut_ptr() as *mut i8, size + 1));
 
         Some(String::from_utf8(retv).unwrap())
     }
@@ -390,8 +386,7 @@ impl Container {
      * Determine the list of container IP addresses.
      */
     pub fn get_ips(&self, interfaces: &str, family: &str, scope: i32) -> Vec<String> {
-        call!(self.get_ips(cstr!(interfaces), cstr!(family), scope) -> [c_str])
-            .unwrap_or_default()
+        call!(self.get_ips(cstr!(interfaces), cstr!(family), scope) -> [c_str]).unwrap_or_default()
     }
 
     /**
@@ -676,7 +671,15 @@ impl Container {
      * Mount the host's path `source` onto the container's path `target`.
      */
     #[cfg(feature = "v3_1")]
-    pub fn mount(&self, source: &str, target: &str, filesystemtype: &str, mountflags: u64, data: &std::os::raw::c_void, mnt: &mut crate::Mount) -> crate::Result<()> {
+    pub fn mount(
+        &self,
+        source: &str,
+        target: &str,
+        filesystemtype: &str,
+        mountflags: u64,
+        data: &std::os::raw::c_void,
+        mnt: &mut crate::Mount,
+    ) -> crate::Result<()> {
         call!(self.mount(cstr!(source), cstr!(target), cstr!(filesystemtype), mountflags, data, mnt) -> int)
     }
 
@@ -684,7 +687,12 @@ impl Container {
      * Unmount the container's path `target`.
      */
     #[cfg(feature = "v3_1")]
-    pub fn umount(&self, target: &str, mountflags: u64, mnt: &mut crate::Mount) -> crate::Result<()> {
+    pub fn umount(
+        &self,
+        target: &str,
+        mountflags: u64,
+        mnt: &mut crate::Mount,
+    ) -> crate::Result<()> {
         call!(self.umount(cstr!(target), mountflags, mnt) -> int)
     }
 

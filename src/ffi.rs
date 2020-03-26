@@ -16,7 +16,7 @@ pub fn to_mut_cstr(s: &str) -> Vec<c_char> {
     let mut bytes = s.to_string().into_bytes();
     bytes.push(0);
 
-     bytes.iter().map(|b| *b as c_char).collect()
+    bytes.iter().map(|b| *b as c_char).collect()
 }
 
 pub fn to_string(s: *const c_char) -> String {
