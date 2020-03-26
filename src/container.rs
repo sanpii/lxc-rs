@@ -1,4 +1,6 @@
-use super::ffi::{to_cstr, to_mut_cstr};
+use super::ffi::to_cstr;
+#[cfg(feature = "v2_0")]
+use super::ffi::to_mut_cstr;
 use std::ptr::{null, null_mut};
 
 macro_rules! get {

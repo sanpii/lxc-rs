@@ -4,6 +4,7 @@ pub fn to_cstr(s: &str) -> std::ffi::CString {
     std::ffi::CString::new(s).unwrap()
 }
 
+#[cfg(feature = "v2_0")]
 pub fn to_mut_cstr(s: &str) -> Vec<c_char> {
     let mut bytes = s.to_string().into_bytes();
     bytes.push(0);
