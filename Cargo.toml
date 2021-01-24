@@ -26,6 +26,3 @@ v3_0 = ["v2_1"]
 v3_1 = ["v3_0"]
 v3_2 = ["v3_1"]
 v4_0 = ["v3_2"]
-
-[badges]
-gitlab = { repository = "sanpi/lxc-rs" }
