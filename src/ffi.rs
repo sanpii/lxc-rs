@@ -4,7 +4,6 @@ pub fn to_cstr(s: &str) -> std::ffi::CString {
     std::ffi::CString::new(s).unwrap()
 }
 
-#[macro_export]
 macro_rules! cstr {
     ( $s:expr ) => {
         $crate::ffi::to_cstr($s).as_ptr()

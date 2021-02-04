@@ -1,9 +1,11 @@
 #![warn(rust_2018_idioms)]
 
+#[macro_use]
+mod ffi;
+
 pub mod attach;
 mod console;
 mod container;
-mod ffi;
 mod flags;
 pub mod log;
 mod migrate;

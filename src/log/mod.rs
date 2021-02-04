@@ -1,8 +1,5 @@
 mod level;
 
-#[cfg(feature = "v2_1")]
-use crate::cstr;
-
 pub use self::level::Level;
 
 pub struct Log {

@@ -1,4 +1,3 @@
-use crate::cstr;
 use crate::ffi::to_cstr;
 #[cfg(feature = "v1_1")]
 use crate::ffi::to_mut_cstr;
