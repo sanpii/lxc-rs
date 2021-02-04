@@ -10,7 +10,7 @@ Add it to your dependencies:
 
 ```toml
 [dependencies]
-lxc = "^0.4"
+lxc = "0.5"
 ```
 
 See [demo.rs](examples/demo.rs) for a complete example.
