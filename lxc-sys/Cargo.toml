@@ -9,6 +9,7 @@ keywords = ["lxc"]
 license = "MIT"
 categories = ["external-ffi-bindings"]
 edition = "2018"
+links = "lxc"
 
 [dependencies]
 libc="0.2"
