@@ -231,7 +231,8 @@ impl Container {
 
     /**
      * Change whether the container wishes all file descriptors to be closed on
-     * startup.
+     *  to be closed on startup. The LISTEN_FDS environment variable
+     *  can be set to keep inherited file descriptors open.
      */
     pub fn want_close_all_fds(&self, state: bool) -> crate::Result<()> {
         call!(self.want_close_all_fds(state) -> bool)
