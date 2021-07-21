@@ -17,7 +17,7 @@ edition = "2018"
 bitflags = "1.0"
 
 [dependencies.lxc-sys]
-version = "0.3"
+version = "0.4"
 path = "./lxc-sys"
 
 [features]
