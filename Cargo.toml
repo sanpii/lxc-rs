@@ -3,7 +3,7 @@ members = ["lxc-sys"]
 
 [package]
 name = "lxc"
-version = "0.5.0"
+version = "0.6.0"
 authors = ["Sanpi <sanpi@homecomputing.fr>"]
 repository = "https://github.com/sanpii/lxc-rs.git"
 documentation = "https://docs.rs/lxc"
