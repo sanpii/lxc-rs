@@ -1,6 +1,6 @@
 # LXC
 
-[![Build Status](https://gitlab.com/sanpi/lxc-rs/badges/master/pipeline.svg)](https://gitlab.com/sanpi/lxc-rs/commits/master)
+[![Build Status](https://gitlab.com/sanpi/lxc-rs/badges/main/pipeline.svg)](https://gitlab.com/sanpi/lxc-rs/commits/main)
 
 Crate to play with [LXC container](https://linuxcontainers.org/lxc/) in rust.
 
