@@ -432,6 +432,7 @@ impl Container {
     /**
      * Copy a stopped container.
      */
+    #[allow(clippy::too_many_arguments)]
     pub fn clone(
         &self,
         newname: &str,

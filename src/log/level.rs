@@ -11,11 +11,11 @@ pub enum Level {
     Notset,
 }
 
-impl std::convert::Into<String> for Level {
-    fn into(self) -> String {
+impl From<Level> for String {
+    fn from(level: Level) -> Self {
         use self::Level::*;
 
-        let s = match self {
+        let s = match level {
             Trace => "TRACE",
             Debug => "DEBUG",
             Info => "INFO",
