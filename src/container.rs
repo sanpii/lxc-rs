@@ -385,8 +385,8 @@ impl Container {
     /**
      * Determine the list of container IP addresses.
      */
-    pub fn get_ips(&self, interfaces: &str, family: &str, scope: i32) -> Vec<String> {
-        call!(self.get_ips(cstr!(interfaces), cstr!(family), scope) -> [c_str]).unwrap_or_default()
+    pub fn get_ips(&self, interface: &str, family: &str, scope: i32) -> Vec<String> {
+        call!(self.get_ips(cstr!(interface), cstr!(family), scope) -> [c_str]).unwrap_or_default()
     }
 
     /**
