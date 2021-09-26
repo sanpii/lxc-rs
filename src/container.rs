@@ -389,7 +389,7 @@ impl Container {
         &self,
         interface: Option<&str>,
         family: Option<&str>,
-        scope: i32,
+        scope: std::os::raw::c_int,
     ) -> Vec<String> {
         call!(self.get_ips(interface.map_or(null(), |x| cstr!(x)), family.map_or(null(), |x| cstr!(x)), scope) -> [c_str]).unwrap_or_default()
     }
