@@ -8,7 +8,7 @@ fn main() {
             None,
             None,
             lxc::CreateFlags::QUIET,
-            &["-d", "ubuntu", "-r", "trusty", "-a", "i386"],
+            &["-d", "ubuntu", "-r", "focal", "-a", "amd64"],
         )
         .expect("Failed to create container rootfs");
     }
