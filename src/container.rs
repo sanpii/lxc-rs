@@ -42,7 +42,7 @@ macro_rules! call {
                         .unwrap()
                         .to_string()
                 })
-                .collect();
+                .collect::<Vec<_>>();
 
             Ok(vec)
         }
@@ -390,8 +390,12 @@ impl Container {
         interface: Option<&str>,
         family: Option<&str>,
         scope: std::os::raw::c_int,
-    ) -> Vec<String> {
-        call!(self.get_ips(interface.map_or(null(), |x| cstr!(x)), family.map_or(null(), |x| cstr!(x)), scope) -> [c_str]).unwrap_or_default()
+    ) -> Vec<std::net::IpAddr> {
+        call!(self.get_ips(interface.map_or(null(), |x| cstr!(x)), family.map_or(null(), |x| cstr!(x)), scope) -> [c_str])
+            .unwrap_or_default()
+            .iter()
+            .map(|x| x.parse().unwrap())
+            .collect()
     }
 
     /**
