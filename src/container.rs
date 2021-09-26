@@ -496,7 +496,7 @@ impl Container {
     pub fn attach(
         &self,
         exec_function: crate::attach::ExecFn,
-        exec_payload: &mut std::os::raw::c_void,
+        exec_payload: *mut std::os::raw::c_void,
         options: &mut crate::attach::Options,
     ) -> crate::Result<i32> {
         let mut attached_process = 0;
