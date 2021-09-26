@@ -16,3 +16,7 @@ libc="0.2"
 
 [build-dependencies]
 bindgen = "0.59"
+
+[features]
+v3_0 = []
+v4_0 = []
