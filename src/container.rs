@@ -728,6 +728,21 @@ impl Container {
     pub fn devpts_fd(&self) -> i32 {
         call!(self.devpts_fd())
     }
+
+    /**
+     * Returns a raw pointer to the container.
+     */
+    pub fn as_ptr(&self) -> *const lxc_sys::lxc_container {
+        self.inner
+    }
+
+    /**
+     * Returns a mutable raw pointer to the container.
+     */
+    pub fn as_mut_ptr(&mut self) -> *mut lxc_sys::lxc_container {
+        self.inner
+    }
+
     fn last_error(&self) -> crate::Error {
         crate::Error {
             num: get!(self.error_num),
