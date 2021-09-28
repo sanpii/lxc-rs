@@ -15,6 +15,7 @@ edition = "2018"
 
 [dependencies]
 bitflags = "1.0"
+thiserror = "1.0"
 
 [dependencies.lxc-sys]
 version = "0.4"

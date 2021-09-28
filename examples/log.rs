@@ -1,8 +1,8 @@
-fn main() {
+fn main() -> lxc::Result {
     #[cfg(feature = "v2_0")]
     let log = lxc::Log {
         name: "demo".to_string(),
-        lxcpath: lxc::get_global_config_item("lxc.lxcpath").unwrap(),
+        lxcpath: lxc::get_global_config_item("lxc.lxcpath")?.unwrap_or_default(),
         file: "demo.log".to_string(),
         level: lxc::log::Level::Debug,
         prefix: "".to_string(),
@@ -10,10 +10,9 @@ fn main() {
     };
 
     #[cfg(feature = "v2_0")]
-    log.init().expect("Unable to init log");
+    log.init()?;
 
-    let c =
-        lxc::Container::new("apicontainer", None).expect("Failed to setup lxc_container struct");
+    let c = lxc::Container::new("apicontainer", None)?;
 
     c.create(
         "download",
@@ -21,10 +20,11 @@ fn main() {
         None,
         lxc::CreateFlags::QUIET,
         &["-d", "ubuntu", "-r", "trusty", "-a", "i386"],
-    )
-    .expect("Failed to create container rootfs");
+    )?;
 
-    c.start(false, &[]).expect("Failed to start the container");
+    c.start(false, &[])?;
 
     lxc::Log::close();
+
+    Ok(())
 }

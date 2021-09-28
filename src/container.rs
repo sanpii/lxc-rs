@@ -14,7 +14,7 @@ macro_rules! get {
         let str = if result.is_null() {
             ""
         } else {
-            unsafe { std::ffi::CStr::from_ptr(result).to_str().unwrap() }
+            unsafe { std::ffi::CStr::from_ptr(result).to_str()? }
         };
 
         str.to_string()
@@ -22,73 +22,66 @@ macro_rules! get {
 }
 
 macro_rules! call {
+    ( $container:ident . $method:ident( $( $arg:expr ),* ) ) => {
+        unsafe {
+            let method = (*$container.inner).$method
+                .ok_or(crate::Error::UnavailableFunction(stringify!($method).to_string()))?;
+
+            method($container.inner, $($arg,)*)
+        }
+    };
+
     ( $container:ident . $method:ident( $( $arg:expr ),* ) -> [c_str] ) => {{
-        let result = unsafe {
-            (*$container.inner).$method.unwrap()($container.inner, $($arg,)*)
-        };
+        let result = call!($container . $method( $($arg),* ));
 
         if result.is_null() {
-            Err($container.last_error())
+            Err($container.last_error()?)
         } else {
             let vec = crate::ffi::vec_from_nta(result);
 
-            let vec = vec.iter()
+            vec.iter()
                 .map(|e| {
                     let str = unsafe {
                         std::ffi::CStr::from_ptr(*e)
                     };
 
                     str.to_str()
-                        .unwrap()
-                        .to_string()
+                        .map(|x| x.to_string())
+                        .map_err(|e| e.into())
                 })
-                .collect::<Vec<_>>();
-
-            Ok(vec)
+                .collect::<crate::Result<Vec<_>>>()
         }
     }};
 
-    ( $container:ident . $method:ident( $( $arg:expr ),* ) ) => {
-        unsafe {
-            (*$container.inner).$method.unwrap()($container.inner, $($arg,)*)
-        }
-    };
-
     ( $container:ident . $method:ident( $( $arg:expr ),* ) -> c_str ) => {{
-        let result = unsafe {
-            (*$container.inner).$method.unwrap()($container.inner, $($arg,)*)
-        };
+        let result = call!($container . $method( $($arg),* ));
 
         let str = unsafe {
             std::ffi::CStr::from_ptr(result)
         };
 
         str.to_str()
-            .unwrap()
-            .to_string()
+            .map(|x| x.to_string())
+            .map_err(|e| e.into())
     }};
 
     ( $container:ident . $method:ident( $( $arg:expr ),* ) -> bool ) => {{
-        let result = unsafe {
-            (*$container.inner).$method.unwrap()($container.inner, $($arg,)*)
-        };
+        let result = call!($container . $method( $($arg),* ));
 
         if result {
             Ok(())
         } else {
-            Err($container.last_error())
+            Err($container.last_error()?)
         }
     }};
 
     ( $container:ident . $method:ident( $( $arg:expr ),* ) -> int ) => {{
-        let result = unsafe {
-            (*$container.inner).$method.unwrap()($container.inner, $($arg,)*)
-        };
+        let result = call!($container . $method( $($arg),* ));
 
         if result >= 0 {
             Ok(())
         } else {
-            Err($container.last_error())
+            Err($container.last_error()?)
         }
     }};
 }
@@ -101,12 +94,9 @@ impl Container {
     /**
      * Create a new container.
      */
-    pub fn new(
-        name: &str,
-        config_path: Option<&std::path::Path>,
-    ) -> std::result::Result<Self, String> {
+    pub fn new(name: &str, config_path: Option<&std::path::Path>) -> crate::Result<Self> {
         let config_path = match config_path {
-            Some(path) => cstr!(path.to_str().unwrap()),
+            Some(path) => cstr!(path.to_str().unwrap_or_default()),
             None => null(),
         };
 
@@ -118,21 +108,21 @@ impl Container {
     /**
      * Add a reference to the specified container.
      */
-    pub fn get(&self) -> crate::Result<()> {
+    pub fn get(&self) -> crate::Result {
         let success = unsafe { lxc_sys::lxc_container_get(self.inner) };
 
         if success == 0 {
             Ok(())
         } else {
-            Err(self.last_error())
+            Err(self.last_error()?)
         }
     }
 
     /**
      * Human-readable string representing last error.
      */
-    pub fn error_string(&self) -> String {
-        get!(self.error_string -> c_str)
+    pub fn error_string(&self) -> crate::Result<String> {
+        Ok(get!(self.error_string -> c_str))
     }
 
     /**
@@ -152,64 +142,73 @@ impl Container {
     /**
      * Full path to configuration file.
      */
-    pub fn config_path(&self) -> String {
-        get!(self.config_path -> c_str)
+    pub fn config_path(&self) -> crate::Result<String> {
+        Ok(get!(self.config_path -> c_str))
     }
 
     /**
      * Determine if `/var/lib/lxc/$name/config` exists.
      */
-    pub fn is_defined(&self) -> bool {
-        call!(self.is_defined())
+    pub fn is_defined(&self) -> crate::Result<bool> {
+        let is_defined = call!(self.is_defined());
+
+        Ok(is_defined)
     }
 
     /**
      * Wait for container to reach a particular state.
      */
-    pub fn state(&self) -> String {
+    pub fn state(&self) -> crate::Result<String> {
         call!(self.state() -> c_str)
     }
 
     /**
      * Determine if container is running.
      */
-    pub fn is_running(&self) -> bool {
-        call!(self.is_running())
+    pub fn is_running(&self) -> crate::Result<bool> {
+        let is_running = call!(self.is_running());
+
+        Ok(is_running)
     }
 
     /**
      * Freeze running container.
      */
-    pub fn freeze(&self) -> crate::Result<()> {
+    pub fn freeze(&self) -> crate::Result {
         call!(self.freeze() -> bool)
     }
 
     /**
      * Thaw a frozen container.
      */
-    pub fn unfreeze(&self) -> crate::Result<()> {
+    pub fn unfreeze(&self) -> crate::Result {
         call!(self.freeze() -> bool)
     }
 
     /**
      * Determine process ID of the containers init process.
      */
-    pub fn init_pid(&self) -> i32 {
-        call!(self.init_pid())
+    pub fn init_pid(&self) -> crate::Result<i32> {
+        let pid = call!(self.init_pid());
+
+        Ok(pid)
     }
 
     /**
      * Load the specified configuration for the container.
      */
-    pub fn load_config(&self, alt_file: &str) -> crate::Result<()> {
+    pub fn load_config(&self, alt_file: &str) -> crate::Result {
         call!(self.load_config(cstr!(alt_file)) -> bool)
     }
 
     /**
      * Start the container.
      */
-    pub fn start(&self, use_init: bool, argv: &[&str]) -> crate::Result<()> {
-        let mut argv: Vec<*mut i8> = argv.iter().map(|e| to_cstr(*e).into_raw()).collect();
+    pub fn start(&self, use_init: bool, argv: &[&str]) -> crate::Result {
+        let mut argv = argv
+            .iter()
+            .map(|e| to_cstr(*e).map(|x| x.into_raw()))
+            .collect::<crate::Result<Vec<_>>>()?;
         argv.push(null_mut());
 
         call!(self.start(use_init as i32, argv.as_mut_ptr()) -> bool)
@@ -218,14 +217,14 @@ impl Container {
     /**
      * Stop the container.
      */
-    pub fn stop(&self) -> crate::Result<()> {
+    pub fn stop(&self) -> crate::Result {
         call!(self.stop() -> bool)
     }
 
     /**
      * Change whether the container wants to run disconnected from the terminal.
      */
-    pub fn want_daemonize(&self, state: bool) -> crate::Result<()> {
+    pub fn want_daemonize(&self, state: bool) -> crate::Result {
         call!(self.want_daemonize(state) -> bool)
     }
 
@@ -234,42 +233,42 @@ impl Container {
      *  to be closed on startup. The LISTEN_FDS environment variable
      *  can be set to keep inherited file descriptors open.
      */
-    pub fn want_close_all_fds(&self, state: bool) -> crate::Result<()> {
+    pub fn want_close_all_fds(&self, state: bool) -> crate::Result {
         call!(self.want_close_all_fds(state) -> bool)
     }
 
     /**
      * Return current config file name.
      */
-    pub fn config_file_name(&self) -> String {
+    pub fn config_file_name(&self) -> crate::Result<String> {
         call!(self.config_file_name() -> c_str)
     }
 
     /**
      * Wait for container to reach a particular state.
      */
-    pub fn wait(&self, state: &str, timeout: i32) -> crate::Result<()> {
+    pub fn wait(&self, state: &str, timeout: i32) -> crate::Result {
         call!(self.wait(cstr!(state), timeout) -> bool)
     }
 
     /**
      * Set a key/value configuration option.
      */
-    pub fn set_config_item(&self, key: &str, value: &str) -> crate::Result<()> {
+    pub fn set_config_item(&self, key: &str, value: &str) -> crate::Result {
         call!(self.set_config_item(cstr!(key), cstr!(value)) -> bool)
     }
 
     /**
      * Delete the container.
      */
-    pub fn destroy(&self) -> crate::Result<()> {
+    pub fn destroy(&self) -> crate::Result {
         call!(self.destroy() -> bool)
     }
 
     /**
      * Save configuaration to a file.
      */
-    pub fn save_config(&self, alt_file: &str) -> crate::Result<()> {
+    pub fn save_config(&self, alt_file: &str) -> crate::Result {
         call!(self.save_config(cstr!(alt_file)) -> bool)
     }
 
@@ -283,13 +282,16 @@ impl Container {
         specs: Option<&mut lxc_sys::bdev_specs>,
         flags: crate::CreateFlags,
         argv: &[&str],
-    ) -> crate::Result<()> {
+    ) -> crate::Result {
         let specs = match specs {
             Some(specs) => &mut *specs,
             None => null_mut(),
         };
 
-        let mut argv: Vec<*mut i8> = argv.iter().map(|e| to_cstr(*e).into_raw()).collect();
+        let mut argv = argv
+            .iter()
+            .map(|e| to_cstr(*e).map(|x| x.into_raw()))
+            .collect::<crate::Result<Vec<_>>>()?;
         argv.push(null_mut());
 
         call!(
@@ -309,77 +311,79 @@ impl Container {
     /**
      * Rename a container.
      */
-    pub fn rename(&self, newname: &str) -> crate::Result<()> {
+    pub fn rename(&self, newname: &str) -> crate::Result {
         call!(self.rename(cstr!(newname)) -> bool)
     }
 
     /**
      * Request the container reboot by sending it `SIGINT`.
      */
-    pub fn reboot(&self) -> crate::Result<()> {
+    pub fn reboot(&self) -> crate::Result {
         call!(self.reboot() -> bool)
     }
 
     /**
      * Request the container shutdown by sending it `SIGPWR`.
      */
-    pub fn shutdown(&self, timeout: i32) -> crate::Result<()> {
+    pub fn shutdown(&self, timeout: i32) -> crate::Result {
         call!(self.shutdown(timeout) -> bool)
     }
 
     /**
      * Completely clear the containers in-memory configuration.
      */
-    pub fn clear_config(&self) {
-        call!(self.clear_config())
+    pub fn clear_config(&self) -> crate::Result {
+        call!(self.clear_config());
+
+        Ok(())
     }
 
     /**
      * Clear a configuration item.
      */
-    pub fn clear_config_item(&self, key: &str) -> crate::Result<()> {
+    pub fn clear_config_item(&self, key: &str) -> crate::Result {
         call!(self.clear_config_item(cstr!(key)) -> bool)
     }
 
     /**
      * Retrieve the value of a config item.
      */
-    pub fn get_config_item(&self, key: &str) -> Option<String> {
+    pub fn get_config_item(&self, key: &str) -> crate::Result<Option<String>> {
         let size = call!(self.get_config_item(cstr!(key), null_mut(), 0));
         if size < 0 {
-            return None;
+            return Ok(None);
         }
         let mut retv = vec![0; size as usize];
 
         call!(self.get_config_item(cstr!(key), retv.as_mut_ptr() as *mut i8, size + 1));
 
-        Some(String::from_utf8(retv).unwrap())
+        Ok(Some(String::from_utf8(retv)?))
     }
 
     /**
      * Retrieve the value of a config item from running container.
      */
-    pub fn get_running_config_item(&self, key: &str) -> String {
+    pub fn get_running_config_item(&self, key: &str) -> crate::Result<String> {
         call!(self.get_running_config_item(cstr!(key)) -> c_str)
     }
 
     /**
      * Retrieve a list of config item keys given a key prefix.
      */
-    pub fn get_keys(&self, key: &str) -> String {
+    pub fn get_keys(&self, key: &str) -> crate::Result<String> {
         let size = call!(self.get_keys(cstr!(key), null_mut(), 0));
         let mut retv = Vec::with_capacity(size as usize);
 
         call!(self.get_keys(cstr!(key), retv.as_mut_ptr() as *mut i8, size));
 
-        String::from_utf8(retv).unwrap()
+        String::from_utf8(retv).map_err(|e| e.into())
     }
 
     /**
      * Obtain a list of network interfaces.
      */
-    pub fn get_interfaces(&self) -> Vec<String> {
-        call!(self.get_interfaces() -> [c_str]).unwrap_or_default()
+    pub fn get_interfaces(&self) -> crate::Result<Vec<String>> {
+        call!(self.get_interfaces() -> [c_str])
     }
 
     /**
@@ -390,30 +394,33 @@ impl Container {
         interface: Option<&str>,
         family: Option<&str>,
         scope: std::os::raw::c_int,
-    ) -> Vec<std::net::IpAddr> {
-        call!(self.get_ips(interface.map_or(null(), |x| cstr!(x)), family.map_or(null(), |x| cstr!(x)), scope) -> [c_str])
+    ) -> crate::Result<Vec<std::net::IpAddr>> {
+        let map =
+            |s: Option<&str>| s.map_or(Ok(null()), |x| crate::ffi::to_cstr(x).map(|x| x.as_ptr()));
+
+        call!(self.get_ips(map(interface)?, map(family)?, scope) -> [c_str])
             .unwrap_or_default()
             .iter()
-            .map(|x| x.parse().unwrap())
+            .map(|x| x.parse().map_err(|e: std::net::AddrParseError| e.into()))
             .collect()
     }
 
     /**
      * Retrieve the specified cgroup subsystem value for the container.
      */
-    pub fn get_cgroup_item(&self, subsys: &str) -> String {
+    pub fn get_cgroup_item(&self, subsys: &str) -> crate::Result<String> {
         let size = call!(self.get_cgroup_item(cstr!(subsys), null_mut(), 0));
         let mut retv = Vec::with_capacity(size as usize);
 
         call!(self.get_cgroup_item(cstr!(subsys), retv.as_mut_ptr() as *mut i8, size));
 
-        String::from_utf8(retv).unwrap()
+        String::from_utf8(retv).map_err(|e| e.into())
     }
 
     /**
      * Set the specified cgroup subsystem value for the container.
      */
-    pub fn set_cgroup_item(&self, subsys: &str, value: &str) -> crate::Result<()> {
+    pub fn set_cgroup_item(&self, subsys: &str, value: &str) -> crate::Result {
         call!(self.set_cgroup_item(cstr!(subsys), cstr!(value)) -> bool)
     }
 
@@ -427,14 +434,14 @@ impl Container {
      * changed using `set_config_path`. There is no other way to specify this in
      * general at the moment.
      */
-    pub fn get_config_path(&self) -> String {
+    pub fn get_config_path(&self) -> crate::Result<String> {
         call!(self.get_config_path() -> c_str)
     }
 
     /**
      * Set the full path to the containers configuration file.
      */
-    pub fn set_config_path(&self, path: &str) -> crate::Result<()> {
+    pub fn set_config_path(&self, path: &str) -> crate::Result {
         call!(self.set_config_path(cstr!(path)) -> bool)
     }
 
@@ -451,7 +458,7 @@ impl Container {
         bdevdata: &str,
         newsize: u64,
         hookargs: &[String],
-    ) -> Self {
+    ) -> crate::Result<Self> {
         if !hookargs.is_empty() {
             unimplemented!();
         }
@@ -466,13 +473,13 @@ impl Container {
             null_mut()
         ));
 
-        Self { inner }
+        Ok(Self { inner })
     }
 
     /**
      * Allocate a console tty for the container.
      */
-    pub fn console_getfd(&self, ttynum: &mut i32, masterfd: &mut i32) -> crate::Result<()> {
+    pub fn console_getfd(&self, ttynum: &mut i32, masterfd: &mut i32) -> crate::Result {
         call!(self.console_getfd(ttynum, masterfd) -> int)
     }
 
@@ -486,7 +493,7 @@ impl Container {
         stdoutfd: i32,
         stderrfd: i32,
         escape: i32,
-    ) -> crate::Result<()> {
+    ) -> crate::Result {
         call!(self.console(ttynum, stdinfd, stdoutfd, stderrfd, escape) -> int)
     }
 
@@ -519,13 +526,16 @@ impl Container {
         program: &str,
         argv: &[&str],
     ) -> crate::Result<i32> {
-        let mut argv: Vec<*const i8> = argv.iter().map(|e| cstr!(*e)).collect();
+        let mut argv = argv
+            .iter()
+            .map(|e| crate::ffi::to_cstr(*e).map(|x| x.as_ptr()))
+            .collect::<crate::Result<Vec<_>>>()?;
         argv.push(null());
 
         let pid = call!(self.attach_run_wait(options, cstr!(program), argv.as_ptr()));
 
         if pid == -1 {
-            Err(self.last_error())
+            Err(self.last_error()?)
         } else {
             Ok(pid)
         }
@@ -538,18 +548,18 @@ impl Container {
      * `/var/lib/lxc/<c>/snaps/snap<n>` where `<c>` represents the container
      * name and `<n>` represents the zero-based snapshot number.
      */
-    pub fn snapshot(&self, commentfile: &str) -> crate::Result<()> {
+    pub fn snapshot(&self, commentfile: &str) -> crate::Result {
         call!(self.snapshot(cstr!(commentfile)) -> int)
     }
 
     /**
      * Obtain a list of container snapshots.
      */
-    pub fn snapshot_list(&self) -> Vec<crate::Snapshot> {
+    pub fn snapshot_list(&self) -> crate::Result<Vec<crate::Snapshot>> {
         let mut list = Vec::new();
         call!(self.snapshot_list(&mut list.as_mut_ptr()));
 
-        list
+        Ok(list)
     }
 
     /**
@@ -558,28 +568,30 @@ impl Container {
      * The restored container will be a copy (not snapshot) of the snapshot,
      * and restored in the `lxcpath` of the original container.
      */
-    pub fn snapshot_restore(&self, snapname: &str, newname: &str) -> crate::Result<()> {
+    pub fn snapshot_restore(&self, snapname: &str, newname: &str) -> crate::Result {
         call!(self.snapshot_restore(cstr!(snapname), cstr!(newname)) -> bool)
     }
 
     /**
      * Destroy the specified snapshot.
      */
-    pub fn snapshot_destroy(&self, snapname: &str) -> crate::Result<()> {
+    pub fn snapshot_destroy(&self, snapname: &str) -> crate::Result {
         call!(self.snapshot_destroy(cstr!(snapname)) -> bool)
     }
 
     /**
      * Determine if the caller may control the container.
      */
-    pub fn may_control(&self) -> bool {
-        call!(self.may_control())
+    pub fn may_control(&self) -> crate::Result<bool> {
+        let may_control = call!(self.may_control());
+
+        Ok(may_control)
     }
 
     /**
      * Add specified device to the container.
      */
-    pub fn add_device_node(&self, src_path: &str, dest_path: Option<&str>) -> crate::Result<()> {
+    pub fn add_device_node(&self, src_path: &str, dest_path: Option<&str>) -> crate::Result {
         let ptr = match dest_path {
             Some(s) => cstr!(s),
             None => std::ptr::null(),
@@ -591,7 +603,7 @@ impl Container {
     /**
      * Remove specified device from the container.
      */
-    pub fn remove_device_node(&self, src_path: &str, dest_path: Option<&str>) -> crate::Result<()> {
+    pub fn remove_device_node(&self, src_path: &str, dest_path: Option<&str>) -> crate::Result {
         let ptr = match dest_path {
             Some(s) => cstr!(s),
             None => std::ptr::null(),
@@ -604,7 +616,7 @@ impl Container {
      * Add specified netdev to the container.
      */
     #[cfg(feature = "v1_1")]
-    pub fn attach_interface(&self, dev: &str, dst_dev: &str) -> crate::Result<()> {
+    pub fn attach_interface(&self, dev: &str, dst_dev: &str) -> crate::Result {
         call!(self.attach_interface(cstr!(dev), cstr!(dst_dev)) -> bool)
     }
 
@@ -612,7 +624,7 @@ impl Container {
      * Remove specified netdev from the container.
      */
     #[cfg(feature = "v1_1")]
-    pub fn detach_interface(&self, dev: &str, dst_dev: &str) -> crate::Result<()> {
+    pub fn detach_interface(&self, dev: &str, dst_dev: &str) -> crate::Result {
         call!(self.detach_interface(cstr!(dev), cstr!(dst_dev)) -> bool)
     }
 
@@ -620,7 +632,7 @@ impl Container {
      * Checkpoint a container.
      */
     #[cfg(feature = "v1_1")]
-    pub fn checkpoint(&self, directory: &str, stop: bool, verbose: bool) -> crate::Result<()> {
+    pub fn checkpoint(&self, directory: &str, stop: bool, verbose: bool) -> crate::Result {
         call!(self.checkpoint(to_mut_cstr(directory).as_mut_ptr(), stop, verbose) -> bool)
     }
 
@@ -628,7 +640,7 @@ impl Container {
      * Restore a container from a checkpoint.
      */
     #[cfg(feature = "v1_1")]
-    pub fn restore(&self, directory: &str, verbose: bool) -> crate::Result<()> {
+    pub fn restore(&self, directory: &str, verbose: bool) -> crate::Result {
         call!(self.restore(to_mut_cstr(directory).as_mut_ptr(), verbose) -> bool)
     }
 
@@ -636,7 +648,7 @@ impl Container {
      * Delete the container and all its snapshots.
      */
     #[cfg(feature = "v1_1")]
-    pub fn destroy_with_snapshots(&self) -> crate::Result<()> {
+    pub fn destroy_with_snapshots(&self) -> crate::Result {
         call!(self.destroy_with_snapshots() -> bool)
     }
 
@@ -644,7 +656,7 @@ impl Container {
      * Destroy all the container's snapshot.
      */
     #[cfg(feature = "v1_1")]
-    pub fn snapshot_destroy_all(&self) -> crate::Result<()> {
+    pub fn snapshot_destroy_all(&self) -> crate::Result {
         call!(self.snapshot_destroy_all() -> bool)
     }
 
@@ -652,12 +664,7 @@ impl Container {
      * An API call to perform various migration operations.
      */
     #[cfg(feature = "v2_0")]
-    pub fn migrate(
-        &self,
-        cmd: u32,
-        opts: &mut crate::migrate::Opts,
-        size: usize,
-    ) -> crate::Result<()> {
+    pub fn migrate(&self, cmd: u32, opts: &mut crate::migrate::Opts, size: usize) -> crate::Result {
         call!(self.migrate(cmd, opts, size as u32) -> int)
     }
 
@@ -665,7 +672,7 @@ impl Container {
      * Query the console log of a container.
      */
     #[cfg(feature = "v3_0")]
-    pub fn console_log(&self, log: &mut crate::console::Log) -> crate::Result<()> {
+    pub fn console_log(&self, log: &mut crate::console::Log) -> crate::Result {
         call!(self.console_log(log) -> int)
     }
 
@@ -673,7 +680,7 @@ impl Container {
      * Request the container reboot by sending it `SIGINT`.
      */
     #[cfg(feature = "v3_0")]
-    pub fn reboot2(&self, timetout: i32) -> crate::Result<()> {
+    pub fn reboot2(&self, timetout: i32) -> crate::Result {
         call!(self.reboot2(timetout) -> bool)
     }
 
@@ -689,7 +696,7 @@ impl Container {
         mountflags: u64,
         data: &std::os::raw::c_void,
         mnt: &mut crate::Mount,
-    ) -> crate::Result<()> {
+    ) -> crate::Result {
         call!(self.mount(cstr!(source), cstr!(target), cstr!(filesystemtype), mountflags, data, mnt) -> int)
     }
 
@@ -697,12 +704,7 @@ impl Container {
      * Unmount the container's path `target`.
      */
     #[cfg(feature = "v3_1")]
-    pub fn umount(
-        &self,
-        target: &str,
-        mountflags: u64,
-        mnt: &mut crate::Mount,
-    ) -> crate::Result<()> {
+    pub fn umount(&self, target: &str, mountflags: u64, mnt: &mut crate::Mount) -> crate::Result {
         call!(self.umount(cstr!(target), mountflags, mnt) -> int)
     }
 
@@ -710,23 +712,27 @@ impl Container {
      * Retrieve a file descriptor for the container's seccomp filter.
      */
     #[cfg(feature = "v3_2")]
-    pub fn seccomp_notify_fd(&self) -> i32 {
-        call!(self.seccomp_notify_fd())
+    pub fn seccomp_notify_fd(&self) -> crate::Result<i32> {
+        let fd = call!(self.seccomp_notify_fd());
+
+        Ok(fd)
     }
 
     /**
      * Retrieve a pidfd for the container's init process.
      */
     #[cfg(feature = "v4_0")]
-    pub fn init_pidfd(&self) -> i32 {
-        call!(self.init_pidfd())
+    pub fn init_pidfd(&self) -> crate::Result<i32> {
+        let pidfd = call!(self.init_pidfd());
+
+        Ok(pidfd)
     }
 
     /**
      * Retrieve a file descriptor for the running container's seccomp filter.
      */
     #[cfg(feature = "v4_0_5")]
-    pub fn seccomp_notify_fd_active(&self) -> i32 {
+    pub fn seccomp_notify_fd_active(&self) -> crate::Result<i32> {
         call!(self.seccomp_notify_fd_active())
     }
 
@@ -752,11 +758,13 @@ impl Container {
         self.inner
     }
 
-    fn last_error(&self) -> crate::Error {
-        crate::Error {
+    fn last_error(&self) -> crate::Result<crate::Error> {
+        let err = crate::Error::LXCContainer {
             num: get!(self.error_num),
-            str: get!(self.error_string -> c_str),
-        }
+            message: get!(self.error_string -> c_str),
+        };
+
+        Ok(err)
     }
 }
 
