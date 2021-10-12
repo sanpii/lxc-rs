@@ -3,24 +3,6 @@ use crate::ffi::to_cstr;
 use crate::ffi::to_mut_cstr;
 use std::ptr::{null, null_mut};
 
-macro_rules! get {
-    ( $container:ident . $prop:ident ) => {{
-        unsafe { (*$container.inner).$prop }
-    }};
-
-    ( $container:ident . $prop:ident -> c_str ) => {{
-        let result = get!($container.$prop);
-
-        let str = if result.is_null() {
-            ""
-        } else {
-            unsafe { std::ffi::CStr::from_ptr(result).to_str().unwrap() }
-        };
-
-        str.to_string()
-    }};
-}
-
 macro_rules! call {
     ( $container:ident . $method:ident( $( $arg:expr ),* ) -> [c_str] ) => {{
         let result = unsafe {
@@ -136,28 +118,28 @@ impl Container {
      * Human-readable string representing last error.
      */
     pub fn error_string(&self) -> String {
-        get!(self.error_string -> c_str)
+        prop!(self.error_string -> c_str)
     }
 
     /**
      * Last error number.
      */
     pub fn error_num(&self) -> i32 {
-        get!(self.error_num)
+        prop!(self.error_num)
     }
 
     /**
      * Whether container wishes to be daemonized.
      */
     pub fn daemonize(&self) -> bool {
-        get!(self.daemonize)
+        prop!(self.daemonize)
     }
 
     /**
      * Full path to configuration file.
      */
     pub fn config_path(&self) -> String {
-        get!(self.config_path -> c_str)
+        prop!(self.config_path -> c_str)
     }
 
     /**
@@ -497,7 +479,7 @@ impl Container {
     /**
      * Create a sub-process attached to a container and run a function inside it.
      */
-    pub fn attach(
+    pub unsafe fn attach(
         &self,
         exec_function: crate::attach::ExecFn,
         exec_payload: &mut std::os::raw::c_void,
@@ -505,12 +487,12 @@ impl Container {
     ) -> crate::Result<i32> {
         let mut attached_process = 0;
 
-        let result =
-            call!(self.attach(exec_function, exec_payload, options, &mut attached_process) -> int);
+        let result = (*self.inner).attach.unwrap()(self.inner, exec_function, exec_payload, options, &mut attached_process);
 
-        match result {
-            Ok(()) => Ok(attached_process),
-            Err(err) => Err(err),
+        if result >= 0 {
+            Ok(attached_process)
+        } else {
+            Err(self.last_error())
         }
     }
 
@@ -550,10 +532,15 @@ impl Container {
      * Obtain a list of container snapshots.
      */
     pub fn snapshot_list(&self) -> Vec<crate::Snapshot> {
-        let mut list = Vec::new();
-        call!(self.snapshot_list(&mut list.as_mut_ptr()));
+        let mut raw = [];
+        let size = call!(self.snapshot_list(raw.as_mut_ptr())) as usize;
 
-        list
+        unsafe {
+            std::slice::from_raw_parts(raw.as_mut_ptr(), size)
+                .iter()
+                .map(Into::into)
+                .collect()
+        }
     }
 
     /**
@@ -685,7 +672,7 @@ impl Container {
      * Mount the host's path `source` onto the container's path `target`.
      */
     #[cfg(feature = "v3_1")]
-    pub fn mount(
+    pub unsafe fn mount(
         &self,
         source: &str,
         target: &str,
@@ -758,8 +745,8 @@ impl Container {
 
     fn last_error(&self) -> crate::Error {
         crate::Error {
-            num: get!(self.error_num),
-            str: get!(self.error_string -> c_str),
+            num: prop!(self.error_num),
+            str: prop!(self.error_string -> c_str),
         }
     }
 }

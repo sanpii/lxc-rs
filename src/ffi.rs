@@ -10,6 +10,24 @@ macro_rules! cstr {
     };
 }
 
+macro_rules! prop {
+    ( $self:ident . $prop:ident ) => {{
+        unsafe { (*$self.inner).$prop }
+    }};
+
+    ( $self:ident . $prop:ident -> c_str ) => {{
+        let result = prop!($self.$prop);
+
+        let str = if result.is_null() {
+            ""
+        } else {
+            unsafe { std::ffi::CStr::from_ptr(result).to_str().unwrap() }
+        };
+
+        str.to_string()
+    }};
+}
+
 #[cfg(feature = "v1_1")]
 pub fn to_mut_cstr(s: &str) -> Vec<c_char> {
     let mut bytes = s.to_string().into_bytes();
