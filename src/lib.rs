@@ -9,17 +9,19 @@ mod container;
 mod flags;
 pub mod log;
 mod migrate;
+#[cfg(feature = "v3_1")]
+mod mount;
 mod snapshot;
 
 pub use self::container::Container;
 pub use self::flags::{AttchFlags, CloneFlags, CreateFlags};
 pub use self::log::Log;
+#[cfg(feature = "v3_1")]
+pub use self::mount::Mount;
 pub use self::snapshot::Snapshot;
 
 pub use lxc_sys::lxc_conf as Conf;
 pub use lxc_sys::lxc_lock as Lock;
-#[cfg(feature = "v3_1")]
-pub use lxc_sys::lxc_mount as Mount;
 
 #[derive(Debug)]
 pub struct Error {

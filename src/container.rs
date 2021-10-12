@@ -694,7 +694,7 @@ impl Container {
             cstr!(filesystemtype),
             mountflags,
             data,
-            mnt,
+            mnt.as_mut_ptr(),
         );
 
         if result >= 0 {
@@ -714,7 +714,7 @@ impl Container {
         mountflags: u64,
         mnt: &mut crate::Mount,
     ) -> crate::Result<()> {
-        call!(self.umount(cstr!(target), mountflags, mnt) -> int)
+        call!(self.umount(cstr!(target), mountflags, mnt.as_mut_ptr()) -> int)
     }
 
     /**
