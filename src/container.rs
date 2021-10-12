@@ -487,7 +487,13 @@ impl Container {
     ) -> crate::Result<i32> {
         let mut attached_process = 0;
 
-        let result = (*self.inner).attach.unwrap()(self.inner, exec_function, exec_payload, options, &mut attached_process);
+        let result = (*self.inner).attach.unwrap()(
+            self.inner,
+            exec_function,
+            exec_payload,
+            options,
+            &mut attached_process,
+        );
 
         if result >= 0 {
             Ok(attached_process)
@@ -681,7 +687,21 @@ impl Container {
         data: &std::os::raw::c_void,
         mnt: &mut crate::Mount,
     ) -> crate::Result<()> {
-        call!(self.mount(cstr!(source), cstr!(target), cstr!(filesystemtype), mountflags, data, mnt) -> int)
+        let result = (*self.inner).mount.unwrap()(
+            self.inner,
+            cstr!(source),
+            cstr!(target),
+            cstr!(filesystemtype),
+            mountflags,
+            data,
+            mnt,
+        );
+
+        if result >= 0 {
+            Ok(())
+        } else {
+            Err(self.last_error())
+        }
     }
 
     /**
