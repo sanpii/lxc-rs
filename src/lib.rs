@@ -20,9 +20,6 @@ pub use self::log::Log;
 pub use self::mount::Mount;
 pub use self::snapshot::Snapshot;
 
-pub use lxc_sys::lxc_conf as Conf;
-pub use lxc_sys::lxc_lock as Lock;
-
 #[derive(Debug)]
 pub struct Error {
     pub num: i32,
