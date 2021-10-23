@@ -1,12 +1,12 @@
 use std::os::raw::c_char;
 
-pub fn to_cstr(s: &str) -> std::ffi::CString {
-    std::ffi::CString::new(s).unwrap()
+pub fn to_cstr(s: &str) -> crate::Result<std::ffi::CString> {
+    std::ffi::CString::new(s).map_err(Into::into)
 }
 
 macro_rules! cstr {
     ( $s:expr ) => {
-        $crate::ffi::to_cstr($s).as_ptr()
+        $crate::ffi::to_cstr($s)?.as_ptr()
     };
 }
 
@@ -18,10 +18,10 @@ pub fn to_mut_cstr(s: &str) -> Vec<c_char> {
     bytes.iter().map(|b| *b as c_char).collect()
 }
 
-pub fn to_string(s: *const c_char) -> String {
+pub fn to_string(s: *const c_char) -> crate::Result<String> {
     let buffer = unsafe { std::ffi::CStr::from_ptr(s) };
 
-    buffer.to_str().unwrap().to_string()
+    Ok(buffer.to_str()?.to_string())
 }
 
 pub fn vec_from_nta(raw: *mut *mut i8) -> Vec<*mut i8> {

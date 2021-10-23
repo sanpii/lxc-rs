@@ -2,11 +2,10 @@ extern crate lxc;
 
 use std::os::unix::io::AsRawFd;
 
-fn main() -> std::io::Result<()> {
-    let c =
-        lxc::Container::new("apicontainer", None).expect("Failed to setup lxc_container struct");
+fn main() -> Result<(), Box<dyn std::error::Error>> {
+    let c = lxc::Container::new("apicontainer", None)?;
 
-    if c.is_defined() {
+    if c.is_defined()? {
         panic!("Container already exists");
     }
 
@@ -16,10 +15,9 @@ fn main() -> std::io::Result<()> {
         None,
         ::lxc::CreateFlags::QUIET,
         &["-d", "centos", "-r", "7", "-a", "amd64"],
-    )
-    .expect("Failed to create container rootfs");
+    )?;
 
-    c.start(false, &[]).expect("Failed to start the container");
+    c.start(false, &[])?;
 
     let mut options = lxc::attach::Options {
         attach_flags: 0,
@@ -45,8 +43,8 @@ fn main() -> std::io::Result<()> {
         Ok(s) => println!("Ok, waitpid() status={}", s),
     }
 
-    c.stop().expect("Failed to kill the container.");
-    c.destroy().expect("Failed to destroy the container.");
+    c.stop()?;
+    c.destroy()?;
 
     Ok(())
 }

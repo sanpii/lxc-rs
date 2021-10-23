@@ -6,11 +6,13 @@ mod ffi;
 pub mod attach;
 mod console;
 mod container;
+mod errors;
 mod flags;
 pub mod log;
 mod migrate;
 
 pub use self::container::Container;
+pub use self::errors::{Error, Result};
 pub use self::flags::{AttchFlags, CloneFlags, CreateFlags};
 pub use self::log::Log;
 
@@ -20,35 +22,19 @@ pub use lxc_sys::lxc_lock as Lock;
 pub use lxc_sys::lxc_mount as Mount;
 pub use lxc_sys::lxc_snapshot as Snapshot;
 
-#[derive(Debug)]
-pub struct Error {
-    pub num: i32,
-    pub str: String,
-}
-
-impl std::fmt::Display for Error {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(f, "{}", self.str)
-    }
-}
-
-impl std::error::Error for Error {}
-
-pub type Result<T> = std::result::Result<T, Error>;
-
 /**
  * Determine version of LXC.
  */
-pub fn version() -> String {
+pub fn version() -> crate::Result<String> {
     let version = unsafe { std::ffi::CStr::from_ptr(lxc_sys::lxc_get_version()) };
 
-    version.to_str().unwrap().to_string()
+    Ok(version.to_str()?.to_string())
 }
 
 /**
  * Obtain a list of all container states.
  */
-pub fn wait_states() -> Vec<String> {
+pub fn wait_states() -> crate::Result<Vec<String>> {
     let size = unsafe { lxc_sys::lxc_get_wait_states(std::ptr::null_mut()) };
 
     let mut states = Vec::new();
@@ -62,13 +48,13 @@ pub fn wait_states() -> Vec<String> {
 /**
  * Get the value for a global config key.
  */
-pub fn get_global_config_item(key: &str) -> Option<String> {
+pub fn get_global_config_item(key: &str) -> crate::Result<Option<String>> {
     let value = unsafe { lxc_sys::lxc_get_global_config_item(cstr!(key)) };
 
     if value.is_null() {
-        None
+        Ok(None)
     } else {
-        Some(self::ffi::to_string(value))
+        Some(self::ffi::to_string(value)).transpose()
     }
 }
 
@@ -76,8 +62,10 @@ pub fn get_global_config_item(key: &str) -> Option<String> {
  * Check if the configuration item is supported by this LXC instance.
  */
 #[cfg(feature = "v2_1")]
-pub fn config_item_is_supported(key: &str) -> bool {
-    unsafe { lxc_sys::lxc_config_item_is_supported(cstr!(key)) }
+pub fn config_item_is_supported(key: &str) -> crate::Result<bool> {
+    let is_supported = unsafe { lxc_sys::lxc_config_item_is_supported(cstr!(key)) };
+
+    Ok(is_supported)
 }
 
 pub fn list_active_containers() {
