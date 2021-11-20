@@ -1,4 +1,4 @@
-#![warn(rust_2018_idioms)]
+#![warn(warnings)]
 
 #[macro_use]
 mod ffi;
