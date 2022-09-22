@@ -12,7 +12,6 @@ edition = "2021"
 links = "lxc"
 
 [dependencies]
-libc="0.2"
 
 [build-dependencies]
 bindgen = "0.60"
