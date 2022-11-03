@@ -213,7 +213,7 @@ impl Container {
      * Start the container.
      */
     pub fn start(&self, use_init: bool, argv: &[&str]) -> crate::Result<()> {
-        let mut argv: Vec<*mut i8> = argv.iter().map(|e| to_cstr(*e).into_raw()).collect();
+        let mut argv: Vec<*mut i8> = argv.iter().map(|e| to_cstr(e).into_raw()).collect();
         argv.push(null_mut());
 
         call!(self.start(use_init as i32, argv.as_mut_ptr()) -> bool)
@@ -293,7 +293,7 @@ impl Container {
             None => null_mut(),
         };
 
-        let mut argv: Vec<*mut i8> = argv.iter().map(|e| to_cstr(*e).into_raw()).collect();
+        let mut argv: Vec<*mut i8> = argv.iter().map(|e| to_cstr(e).into_raw()).collect();
         argv.push(null_mut());
 
         call!(
