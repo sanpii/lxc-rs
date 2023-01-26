@@ -113,7 +113,7 @@ impl Container {
         let inner = unsafe { lxc_sys::lxc_container_new(cstr!(name), config_path) };
 
         if inner.is_null() {
-            Err(format!("Unable to create container {}", name))
+            Err(format!("Unable to create container {name}"))
         } else {
             Ok(Self { inner })
         }
