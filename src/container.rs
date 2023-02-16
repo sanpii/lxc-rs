@@ -344,7 +344,7 @@ impl Container {
      * Completely clear the containers in-memory configuration.
      */
     pub fn clear_config(&self) {
-        call!(self.clear_config())
+        call!(self.clear_config());
     }
 
     /**
