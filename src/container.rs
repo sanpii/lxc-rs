@@ -135,6 +135,7 @@ impl Container {
     /**
      * Human-readable string representing last error.
      */
+    #[must_use]
     pub fn error_string(&self) -> String {
         get!(self.error_string -> c_str)
     }
@@ -142,6 +143,7 @@ impl Container {
     /**
      * Last error number.
      */
+    #[must_use]
     pub fn error_num(&self) -> i32 {
         get!(self.error_num)
     }
@@ -149,6 +151,7 @@ impl Container {
     /**
      * Whether container wishes to be daemonized.
      */
+    #[must_use]
     pub fn daemonize(&self) -> bool {
         get!(self.daemonize)
     }
@@ -156,6 +159,7 @@ impl Container {
     /**
      * Full path to configuration file.
      */
+    #[must_use]
     pub fn config_path(&self) -> String {
         get!(self.config_path -> c_str)
     }
@@ -163,6 +167,7 @@ impl Container {
     /**
      * Determine if `/var/lib/lxc/$name/config` exists.
      */
+    #[must_use]
     pub fn is_defined(&self) -> bool {
         call!(self.is_defined())
     }
@@ -170,6 +175,7 @@ impl Container {
     /**
      * Wait for container to reach a particular state.
      */
+    #[must_use]
     pub fn state(&self) -> String {
         call!(self.state() -> c_str)
     }
@@ -177,6 +183,7 @@ impl Container {
     /**
      * Determine if container is running.
      */
+    #[must_use]
     pub fn is_running(&self) -> bool {
         call!(self.is_running())
     }
@@ -198,6 +205,7 @@ impl Container {
     /**
      * Determine process ID of the containers init process.
      */
+    #[must_use]
     pub fn init_pid(&self) -> i32 {
         call!(self.init_pid())
     }
@@ -245,6 +253,7 @@ impl Container {
     /**
      * Return current config file name.
      */
+    #[must_use]
     pub fn config_file_name(&self) -> String {
         call!(self.config_file_name() -> c_str)
     }
@@ -348,6 +357,7 @@ impl Container {
     /**
      * Retrieve the value of a config item.
      */
+    #[must_use]
     pub fn get_config_item(&self, key: &str) -> Option<String> {
         let size = call!(self.get_config_item(cstr!(key), null_mut(), 0));
         if size < 0 {
@@ -363,6 +373,7 @@ impl Container {
     /**
      * Retrieve the value of a config item from running container.
      */
+    #[must_use]
     pub fn get_running_config_item(&self, key: &str) -> String {
         call!(self.get_running_config_item(cstr!(key)) -> c_str)
     }
@@ -370,6 +381,7 @@ impl Container {
     /**
      * Retrieve a list of config item keys given a key prefix.
      */
+    #[must_use]
     pub fn get_keys(&self, key: &str) -> String {
         let size = call!(self.get_keys(cstr!(key), null_mut(), 0));
         let mut retv = Vec::with_capacity(size as usize);
@@ -382,6 +394,7 @@ impl Container {
     /**
      * Obtain a list of network interfaces.
      */
+    #[must_use]
     pub fn get_interfaces(&self) -> Vec<String> {
         call!(self.get_interfaces() -> [c_str]).unwrap_or_default()
     }
@@ -389,6 +402,7 @@ impl Container {
     /**
      * Determine the list of container IP addresses.
      */
+    #[must_use]
     pub fn get_ips(
         &self,
         interface: Option<&str>,
@@ -405,6 +419,7 @@ impl Container {
     /**
      * Retrieve the specified cgroup subsystem value for the container.
      */
+    #[must_use]
     pub fn get_cgroup_item(&self, subsys: &str) -> String {
         let size = call!(self.get_cgroup_item(cstr!(subsys), null_mut(), 0));
         let mut retv = Vec::with_capacity(size as usize);
@@ -431,6 +446,7 @@ impl Container {
      * changed using `set_config_path`. There is no other way to specify this in
      * general at the moment.
      */
+    #[must_use]
     pub fn get_config_path(&self) -> String {
         call!(self.get_config_path() -> c_str)
     }
@@ -445,6 +461,7 @@ impl Container {
     /**
      * Copy a stopped container.
      */
+    #[must_use]
     #[allow(clippy::too_many_arguments)]
     pub fn clone(
         &self,
@@ -549,6 +566,7 @@ impl Container {
     /**
      * Obtain a list of container snapshots.
      */
+    #[must_use]
     pub fn snapshot_list(&self) -> Vec<crate::Snapshot> {
         let mut list = Vec::new();
         call!(self.snapshot_list(&mut list.as_mut_ptr()));
@@ -576,6 +594,7 @@ impl Container {
     /**
      * Determine if the caller may control the container.
      */
+    #[must_use]
     pub fn may_control(&self) -> bool {
         call!(self.may_control())
     }
@@ -745,6 +764,7 @@ impl Container {
     /**
      * Returns a raw pointer to the container.
      */
+    #[must_use]
     pub fn as_ptr(&self) -> *const lxc_sys::lxc_container {
         self.inner
     }

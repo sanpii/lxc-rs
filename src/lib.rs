@@ -39,6 +39,7 @@ pub type Result<T> = std::result::Result<T, Error>;
 /**
  * Determine version of LXC.
  */
+#[must_use]
 pub fn version() -> String {
     let version = unsafe { std::ffi::CStr::from_ptr(lxc_sys::lxc_get_version()) };
 
@@ -48,6 +49,7 @@ pub fn version() -> String {
 /**
  * Obtain a list of all container states.
  */
+#[must_use]
 pub fn wait_states() -> Vec<String> {
     let size = unsafe { lxc_sys::lxc_get_wait_states(std::ptr::null_mut()) };
 
@@ -62,6 +64,7 @@ pub fn wait_states() -> Vec<String> {
 /**
  * Get the value for a global config key.
  */
+#[must_use]
 pub fn get_global_config_item(key: &str) -> Option<String> {
     let value = unsafe { lxc_sys::lxc_get_global_config_item(cstr!(key)) };
 
