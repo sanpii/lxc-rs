@@ -1,7 +1,7 @@
 /** LXC attach function type. */
 pub use lxc_sys::lxc_attach_exec_t as ExecFn;
 
-/** LXC attach options for lxc::Container::attach(). */
+/** LXC attach options for `lxc::Container::attach()`. */
 pub use lxc_sys::lxc_attach_options_t as Options;
 
 bitflags::bitflags! {
