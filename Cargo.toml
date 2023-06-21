@@ -17,7 +17,7 @@ edition = "2021"
 bitflags = "2.0"
 
 [dependencies.lxc-sys]
-version = "0.4"
+version = "0.5"
 path = "./lxc-sys"
 
 [features]
