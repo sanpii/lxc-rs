@@ -14,4 +14,4 @@ links = "lxc"
 [dependencies]
 
 [build-dependencies]
-bindgen = "0.66"
+bindgen = "0.68"
