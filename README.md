@@ -8,9 +8,21 @@ Crate to play with [LXC container](https://linuxcontainers.org/lxc/) in rust.
 
 Add it to your dependencies:
 
-```toml
-[dependencies]
-lxc = "0.5"
+```
+$ cargo add lxc
+```
+
+You also need the lxc C development files:
+
+```
+# Archlinux
+$ sudo pacman -S lxc
+
+# Debian/Ubuntu
+$ sudo apt install lxc-dev
+
+# Fedora
+$ sudo dnf install lxc-devel
 ```
 
 See [demo.rs](examples/demo.rs) for a complete example.
