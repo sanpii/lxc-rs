@@ -19,8 +19,8 @@ bitflags::bitflags! {
  *
  * Returns exit code program on success.
  */
-pub fn run_command(payload: &mut std::os::raw::c_void) -> Result<i32, ()> {
-    let result = unsafe { lxc_sys::lxc_attach_run_command(payload) };
+pub unsafe fn run_command(payload: &mut std::os::raw::c_void) -> Result<i32, ()> {
+    let result = lxc_sys::lxc_attach_run_command(payload);
 
     if result == -1 {
         Err(())
@@ -36,6 +36,6 @@ pub fn run_command(payload: &mut std::os::raw::c_void) -> Result<i32, ()> {
  *
  * Returns exit code of shell.
  */
-pub fn run_shell(_payload: &mut std::os::raw::c_void) -> i32 {
-    unsafe { lxc_sys::lxc_attach_run_shell(_payload) }
+pub unsafe fn run_shell(_payload: &mut std::os::raw::c_void) -> i32 {
+    lxc_sys::lxc_attach_run_shell(_payload)
 }
