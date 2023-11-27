@@ -12,17 +12,17 @@ Add it to your dependencies:
 $ cargo add lxc
 ```
 
-You also need the lxc C development files:
+You also need the lxc C development files and clang:
 
 ```
 # Archlinux
-$ sudo pacman -S lxc
+$ sudo pacman -S lxc clang llvm
 
 # Debian/Ubuntu
-$ sudo apt install lxc-dev
+$ sudo apt install lxc-dev clang llvm
 
 # Fedora
-$ sudo dnf install lxc-devel
+$ sudo dnf install lxc-devel clang llvm
 ```
 
 See [demo.rs](examples/demo.rs) for a complete example.
