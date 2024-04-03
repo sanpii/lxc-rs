@@ -762,6 +762,14 @@ impl Container {
     }
 
     /**
+     * Set response receive timeout for LXC commands.
+     */
+    #[cfg(feature = "v6_0")]
+    pub fn set_timeout(&self, timeout: i32) -> crate::Result<()> {
+        call!(self.set_timeout(timeout) -> bool)
+    }
+
+    /**
      * Returns a raw pointer to the container.
      */
     #[must_use]
