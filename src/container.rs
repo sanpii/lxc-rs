@@ -122,7 +122,7 @@ impl Container {
     /**
      * Add a reference to the specified container.
      */
-    pub fn get(&self) -> crate::Result<()> {
+    pub fn get(&self) -> crate::Result {
         let success = unsafe { lxc_sys::lxc_container_get(self.inner) };
 
         if success == 0 {
@@ -191,14 +191,14 @@ impl Container {
     /**
      * Freeze running container.
      */
-    pub fn freeze(&self) -> crate::Result<()> {
+    pub fn freeze(&self) -> crate::Result {
         call!(self.freeze() -> bool)
     }
 
     /**
      * Thaw a frozen container.
      */
-    pub fn unfreeze(&self) -> crate::Result<()> {
+    pub fn unfreeze(&self) -> crate::Result {
         call!(self.freeze() -> bool)
     }
 
@@ -213,14 +213,14 @@ impl Container {
     /**
      * Load the specified configuration for the container.
      */
-    pub fn load_config(&self, alt_file: &str) -> crate::Result<()> {
+    pub fn load_config(&self, alt_file: &str) -> crate::Result {
         call!(self.load_config(cstr!(alt_file)) -> bool)
     }
 
     /**
      * Start the container.
      */
-    pub fn start(&self, use_init: bool, argv: &[&str]) -> crate::Result<()> {
+    pub fn start(&self, use_init: bool, argv: &[&str]) -> crate::Result {
         let mut argv: Vec<*mut i8> = argv.iter().map(|e| to_cstr(e).into_raw()).collect();
         argv.push(null_mut());
 
@@ -230,14 +230,14 @@ impl Container {
     /**
      * Stop the container.
      */
-    pub fn stop(&self) -> crate::Result<()> {
+    pub fn stop(&self) -> crate::Result {
         call!(self.stop() -> bool)
     }
 
     /**
      * Change whether the container wants to run disconnected from the terminal.
      */
-    pub fn want_daemonize(&self, state: bool) -> crate::Result<()> {
+    pub fn want_daemonize(&self, state: bool) -> crate::Result {
         call!(self.want_daemonize(state) -> bool)
     }
 
@@ -246,7 +246,7 @@ impl Container {
      *  to be closed on startup. The LISTEN_FDS environment variable
      *  can be set to keep inherited file descriptors open.
      */
-    pub fn want_close_all_fds(&self, state: bool) -> crate::Result<()> {
+    pub fn want_close_all_fds(&self, state: bool) -> crate::Result {
         call!(self.want_close_all_fds(state) -> bool)
     }
 
@@ -261,28 +261,28 @@ impl Container {
     /**
      * Wait for container to reach a particular state.
      */
-    pub fn wait(&self, state: &str, timeout: i32) -> crate::Result<()> {
+    pub fn wait(&self, state: &str, timeout: i32) -> crate::Result {
         call!(self.wait(cstr!(state), timeout) -> bool)
     }
 
     /**
      * Set a key/value configuration option.
      */
-    pub fn set_config_item(&self, key: &str, value: &str) -> crate::Result<()> {
+    pub fn set_config_item(&self, key: &str, value: &str) -> crate::Result {
         call!(self.set_config_item(cstr!(key), cstr!(value)) -> bool)
     }
 
     /**
      * Delete the container.
      */
-    pub fn destroy(&self) -> crate::Result<()> {
+    pub fn destroy(&self) -> crate::Result {
         call!(self.destroy() -> bool)
     }
 
     /**
      * Save configuaration to a file.
      */
-    pub fn save_config(&self, alt_file: &str) -> crate::Result<()> {
+    pub fn save_config(&self, alt_file: &str) -> crate::Result {
         call!(self.save_config(cstr!(alt_file)) -> bool)
     }
 
@@ -296,7 +296,7 @@ impl Container {
         specs: Option<&mut lxc_sys::bdev_specs>,
         flags: crate::CreateFlags,
         argv: &[&str],
-    ) -> crate::Result<()> {
+    ) -> crate::Result {
         let specs = match specs {
             Some(specs) => &mut *specs,
             None => null_mut(),
@@ -322,21 +322,21 @@ impl Container {
     /**
      * Rename a container.
      */
-    pub fn rename(&self, newname: &str) -> crate::Result<()> {
+    pub fn rename(&self, newname: &str) -> crate::Result {
         call!(self.rename(cstr!(newname)) -> bool)
     }
 
     /**
      * Request the container reboot by sending it `SIGINT`.
      */
-    pub fn reboot(&self) -> crate::Result<()> {
+    pub fn reboot(&self) -> crate::Result {
         call!(self.reboot() -> bool)
     }
 
     /**
      * Request the container shutdown by sending it `SIGPWR`.
      */
-    pub fn shutdown(&self, timeout: i32) -> crate::Result<()> {
+    pub fn shutdown(&self, timeout: i32) -> crate::Result {
         call!(self.shutdown(timeout) -> bool)
     }
 
@@ -350,7 +350,7 @@ impl Container {
     /**
      * Clear a configuration item.
      */
-    pub fn clear_config_item(&self, key: &str) -> crate::Result<()> {
+    pub fn clear_config_item(&self, key: &str) -> crate::Result {
         call!(self.clear_config_item(cstr!(key)) -> bool)
     }
 
@@ -432,7 +432,7 @@ impl Container {
     /**
      * Set the specified cgroup subsystem value for the container.
      */
-    pub fn set_cgroup_item(&self, subsys: &str, value: &str) -> crate::Result<()> {
+    pub fn set_cgroup_item(&self, subsys: &str, value: &str) -> crate::Result {
         call!(self.set_cgroup_item(cstr!(subsys), cstr!(value)) -> bool)
     }
 
@@ -454,7 +454,7 @@ impl Container {
     /**
      * Set the full path to the containers configuration file.
      */
-    pub fn set_config_path(&self, path: &str) -> crate::Result<()> {
+    pub fn set_config_path(&self, path: &str) -> crate::Result {
         call!(self.set_config_path(cstr!(path)) -> bool)
     }
 
@@ -493,7 +493,7 @@ impl Container {
     /**
      * Allocate a console tty for the container.
      */
-    pub fn console_getfd(&self, ttynum: &mut i32, ptxfd: &mut i32) -> crate::Result<()> {
+    pub fn console_getfd(&self, ttynum: &mut i32, ptxfd: &mut i32) -> crate::Result {
         call!(self.console_getfd(ttynum, ptxfd) -> int)
     }
 
@@ -507,7 +507,7 @@ impl Container {
         stdoutfd: i32,
         stderrfd: i32,
         escape: i32,
-    ) -> crate::Result<()> {
+    ) -> crate::Result {
         call!(self.console(ttynum, stdinfd, stdoutfd, stderrfd, escape) -> int)
     }
 
@@ -559,7 +559,7 @@ impl Container {
      * `/var/lib/lxc/<c>/snaps/snap<n>` where `<c>` represents the container
      * name and `<n>` represents the zero-based snapshot number.
      */
-    pub fn snapshot(&self, commentfile: &str) -> crate::Result<()> {
+    pub fn snapshot(&self, commentfile: &str) -> crate::Result {
         call!(self.snapshot(cstr!(commentfile)) -> int)
     }
 
@@ -580,14 +580,14 @@ impl Container {
      * The restored container will be a copy (not snapshot) of the snapshot,
      * and restored in the `lxcpath` of the original container.
      */
-    pub fn snapshot_restore(&self, snapname: &str, newname: &str) -> crate::Result<()> {
+    pub fn snapshot_restore(&self, snapname: &str, newname: &str) -> crate::Result {
         call!(self.snapshot_restore(cstr!(snapname), cstr!(newname)) -> bool)
     }
 
     /**
      * Destroy the specified snapshot.
      */
-    pub fn snapshot_destroy(&self, snapname: &str) -> crate::Result<()> {
+    pub fn snapshot_destroy(&self, snapname: &str) -> crate::Result {
         call!(self.snapshot_destroy(cstr!(snapname)) -> bool)
     }
 
@@ -602,7 +602,7 @@ impl Container {
     /**
      * Add specified device to the container.
      */
-    pub fn add_device_node(&self, src_path: &str, dest_path: Option<&str>) -> crate::Result<()> {
+    pub fn add_device_node(&self, src_path: &str, dest_path: Option<&str>) -> crate::Result {
         let ptr = match dest_path {
             Some(s) => cstr!(s),
             None => std::ptr::null(),
@@ -614,7 +614,7 @@ impl Container {
     /**
      * Remove specified device from the container.
      */
-    pub fn remove_device_node(&self, src_path: &str, dest_path: Option<&str>) -> crate::Result<()> {
+    pub fn remove_device_node(&self, src_path: &str, dest_path: Option<&str>) -> crate::Result {
         let ptr = match dest_path {
             Some(s) => cstr!(s),
             None => std::ptr::null(),
@@ -627,7 +627,7 @@ impl Container {
      * Add specified netdev to the container.
      */
     #[cfg(feature = "v1_1")]
-    pub fn attach_interface(&self, dev: &str, dst_dev: &str) -> crate::Result<()> {
+    pub fn attach_interface(&self, dev: &str, dst_dev: &str) -> crate::Result {
         call!(self.attach_interface(cstr!(dev), cstr!(dst_dev)) -> bool)
     }
 
@@ -635,7 +635,7 @@ impl Container {
      * Remove specified netdev from the container.
      */
     #[cfg(feature = "v1_1")]
-    pub fn detach_interface(&self, dev: &str, dst_dev: &str) -> crate::Result<()> {
+    pub fn detach_interface(&self, dev: &str, dst_dev: &str) -> crate::Result {
         call!(self.detach_interface(cstr!(dev), cstr!(dst_dev)) -> bool)
     }
 
@@ -643,7 +643,7 @@ impl Container {
      * Checkpoint a container.
      */
     #[cfg(feature = "v1_1")]
-    pub fn checkpoint(&self, directory: &str, stop: bool, verbose: bool) -> crate::Result<()> {
+    pub fn checkpoint(&self, directory: &str, stop: bool, verbose: bool) -> crate::Result {
         call!(self.checkpoint(to_mut_cstr(directory).as_mut_ptr(), stop, verbose) -> bool)
     }
 
@@ -651,7 +651,7 @@ impl Container {
      * Restore a container from a checkpoint.
      */
     #[cfg(feature = "v1_1")]
-    pub fn restore(&self, directory: &str, verbose: bool) -> crate::Result<()> {
+    pub fn restore(&self, directory: &str, verbose: bool) -> crate::Result {
         call!(self.restore(to_mut_cstr(directory).as_mut_ptr(), verbose) -> bool)
     }
 
@@ -659,7 +659,7 @@ impl Container {
      * Delete the container and all its snapshots.
      */
     #[cfg(feature = "v1_1")]
-    pub fn destroy_with_snapshots(&self) -> crate::Result<()> {
+    pub fn destroy_with_snapshots(&self) -> crate::Result {
         call!(self.destroy_with_snapshots() -> bool)
     }
 
@@ -667,7 +667,7 @@ impl Container {
      * Destroy all the container's snapshot.
      */
     #[cfg(feature = "v1_1")]
-    pub fn snapshot_destroy_all(&self) -> crate::Result<()> {
+    pub fn snapshot_destroy_all(&self) -> crate::Result {
         call!(self.snapshot_destroy_all() -> bool)
     }
 
@@ -675,12 +675,7 @@ impl Container {
      * An API call to perform various migration operations.
      */
     #[cfg(feature = "v2_0")]
-    pub fn migrate(
-        &self,
-        cmd: u32,
-        opts: &mut crate::migrate::Opts,
-        size: usize,
-    ) -> crate::Result<()> {
+    pub fn migrate(&self, cmd: u32, opts: &mut crate::migrate::Opts, size: usize) -> crate::Result {
         call!(self.migrate(cmd, opts, size as u32) -> int)
     }
 
@@ -688,7 +683,7 @@ impl Container {
      * Query the console log of a container.
      */
     #[cfg(feature = "v3_0")]
-    pub fn console_log(&self, log: &mut crate::console::Log) -> crate::Result<()> {
+    pub fn console_log(&self, log: &mut crate::console::Log) -> crate::Result {
         call!(self.console_log(log) -> int)
     }
 
@@ -696,7 +691,7 @@ impl Container {
      * Request the container reboot by sending it `SIGINT`.
      */
     #[cfg(feature = "v3_0")]
-    pub fn reboot2(&self, timetout: i32) -> crate::Result<()> {
+    pub fn reboot2(&self, timetout: i32) -> crate::Result {
         call!(self.reboot2(timetout) -> bool)
     }
 
@@ -712,7 +707,7 @@ impl Container {
         mountflags: u64,
         data: &std::os::raw::c_void,
         mnt: &mut crate::Mount,
-    ) -> crate::Result<()> {
+    ) -> crate::Result {
         call!(self.mount(cstr!(source), cstr!(target), cstr!(filesystemtype), mountflags, data, mnt) -> int)
     }
 
@@ -720,12 +715,7 @@ impl Container {
      * Unmount the container's path `target`.
      */
     #[cfg(feature = "v3_1")]
-    pub fn umount(
-        &self,
-        target: &str,
-        mountflags: u64,
-        mnt: &mut crate::Mount,
-    ) -> crate::Result<()> {
+    pub fn umount(&self, target: &str, mountflags: u64, mnt: &mut crate::Mount) -> crate::Result {
         call!(self.umount(cstr!(target), mountflags, mnt) -> int)
     }
 
@@ -765,7 +755,7 @@ impl Container {
      * Set response receive timeout for LXC commands.
      */
     #[cfg(feature = "v6_0")]
-    pub fn set_timeout(&self, timeout: i32) -> crate::Result<()> {
+    pub fn set_timeout(&self, timeout: i32) -> crate::Result {
         call!(self.set_timeout(timeout) -> bool)
     }
 
