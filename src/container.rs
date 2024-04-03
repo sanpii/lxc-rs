@@ -748,7 +748,7 @@ impl Container {
     /**
      * Retrieve a file descriptor for the running container's seccomp filter.
      */
-    #[cfg(feature = "v4_0_5")]
+    #[cfg(feature = "v5_0")]
     pub fn seccomp_notify_fd_active(&self) -> i32 {
         call!(self.seccomp_notify_fd_active())
     }
@@ -756,7 +756,7 @@ impl Container {
     /**
      * Retrieve a mount fd for the container's devpts instance.
      */
-    #[cfg(feature = "v4_0_5")]
+    #[cfg(feature = "v5_0")]
     pub fn devpts_fd(&self) -> i32 {
         call!(self.devpts_fd())
     }
