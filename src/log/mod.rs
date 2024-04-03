@@ -12,17 +12,17 @@ pub struct Log {
 }
 
 #[cfg(feature = "v2_1")]
-impl std::convert::Into<lxc_sys::lxc_log> for Log {
-    fn into(self) -> lxc_sys::lxc_log {
-        let level: String = self.level.into();
+impl From<Log> for lxc_sys::lxc_log {
+    fn from(value: Log) -> Self {
+        let level: String = value.level.into();
 
-        lxc_sys::lxc_log {
-            name: cstr!(&self.name),
-            lxcpath: cstr!(&self.lxcpath),
-            file: cstr!(&self.file),
+        Self {
+            name: cstr!(&value.name),
+            lxcpath: cstr!(&value.lxcpath),
+            file: cstr!(&value.file),
             level: cstr!(&level),
-            prefix: cstr!(&self.prefix),
-            quiet: self.quiet,
+            prefix: cstr!(&value.prefix),
+            quiet: value.quiet,
         }
     }
 }
