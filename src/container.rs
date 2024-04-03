@@ -493,8 +493,8 @@ impl Container {
     /**
      * Allocate a console tty for the container.
      */
-    pub fn console_getfd(&self, ttynum: &mut i32, masterfd: &mut i32) -> crate::Result<()> {
-        call!(self.console_getfd(ttynum, masterfd) -> int)
+    pub fn console_getfd(&self, ttynum: &mut i32, ptxfd: &mut i32) -> crate::Result<()> {
+        call!(self.console_getfd(ttynum, ptxfd) -> int)
     }
 
     /**
