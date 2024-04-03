@@ -31,11 +31,13 @@ impl Log {
     /**
      * Initialize the log.
      */
-    pub fn init(self) -> Result<(), ()> {
-        if self.log_init() == 0 {
-            Ok(())
-        } else {
-            Err(())
+    pub fn init(self) -> crate::Result {
+        match self.log_init() {
+            0 => Ok(()),
+            num => Err(crate::Error {
+                num,
+                str: "Fail to initialize log".to_string(),
+            }),
         }
     }
 
