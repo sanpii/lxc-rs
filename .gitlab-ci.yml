@@ -13,76 +13,50 @@ fmt:
 
 .common: &common
     before_script:
-        - VERSION=$(echo "$CI_JOB_NAME" | cut -d ':' -f 2)
         - apt update
-        - apt install lxc-dev clang -y
+        - apt install lxc-dev clang meson systemd -y
 
         - git clone https://github.com/lxc/lxc.git
         - cd lxc
-        - git checkout "lxc-$VERSION.0"
-        - ./autogen.sh
-        - ./configure
-        - cp src/lxc/attach_options.h src/lxc/lxccontainer.h src/lxc/version.h /usr/include/lxc
+        - >
+          case "$VERSION" in
+            "5.0")
+                TAG="lxc-5.0.3"
+            ;;
+            *)
+                TAG="lxc-$VERSION.0"
+            ;;
+          esac
+        - git checkout "$TAG"
+        - >
+          if [[ $(echo "$VERSION" | cut -d. -f1) -ge 5 ]]
+          then
+              meson setup -Dprefix=/usr -Dman=false build
+              meson compile -C build
+              meson install -C build
+          else
+              ./autogen.sh
+              ./configure
+              cp src/lxc/attach_options.h src/lxc/lxccontainer.h src/lxc/version.h /usr/include/lxc
+          fi
 
-.clippy: &clippy
+clippy:
+    parallel:
+        matrix:
+            - VERSION: ["1.0", "1.1", "2.0", "2.1", "3.0", "3.1", "3.2", "4.0", "5.0"]
     <<: *common
     stage: lint
     script:
         - rustup component add clippy
         - cargo clippy --features="v${VERSION/./_}"
 
-clippy:1.0:
-    <<: *clippy
-
-clippy:1.1:
-    <<: *clippy
-
-clippy:2.0:
-    <<: *clippy
-
-clippy:2.1:
-    <<: *clippy
-
-clippy:3.0:
-    <<: *clippy
-
-clippy:3.1:
-    <<: *clippy
-
-clippy:3.2:
-    <<: *clippy
-
-clippy:4.0:
-    <<: *clippy
-
-.test: &test
+test:
+    parallel:
+        matrix:
+            - VERSION: ["1.0", "1.1", "2.0", "2.1", "3.0", "3.1", "3.2", "4.0", "5.0"]
     <<: *common
     stage: test
     script:
         - FEATURE="v${VERSION/./_}"
         - cargo test --features=$FEATURE --release
         - cargo test --features=$FEATURE
-
-test:1.0:
-    <<: *test
-
-test:1.1:
-    <<: *test
-
-test:2.0:
-    <<: *test
-
-test:2.1:
-    <<: *test
-
-test:3.0:
-    <<: *test
-
-test:3.1:
-    <<: *test
-
-test:3.2:
-    <<: *test
-
-test:4.0:
-    <<: *test
