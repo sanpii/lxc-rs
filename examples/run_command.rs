@@ -36,6 +36,13 @@ fn main() -> std::io::Result<()> {
         stdin_fd: std::io::stdin().as_raw_fd(),
         namespaces: -1,
         personality: -1,
+        #[cfg(feature = "v5_0")]
+        groups: lxc_sys::lxc_groups_t {
+            size: 0,
+            list: std::ptr::null_mut(),
+        },
+        #[cfg(feature = "v5_0")]
+        lsm_label: std::ptr::null_mut(),
     };
     let prog = "/bin/ps";
     let args = [prog, "auxw"];
