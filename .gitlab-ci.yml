@@ -14,12 +14,15 @@ fmt:
 .common: &common
     before_script:
         - apt update
-        - apt install lxc-dev clang meson systemd -y
+        - apt install lxc-dev clang meson systemd libdbus-1-dev -y
 
         - git clone https://github.com/lxc/lxc.git
         - cd lxc
         - >
           case "$VERSION" in
+            "6.0")
+                TAG="v6.0.0"
+            ;;
             "5.0")
                 TAG="lxc-5.0.3"
             ;;
@@ -43,7 +46,7 @@ fmt:
 clippy:
     parallel:
         matrix:
-            - VERSION: ["1.0", "1.1", "2.0", "2.1", "3.0", "3.1", "3.2", "4.0", "5.0"]
+            - VERSION: ["1.0", "1.1", "2.0", "2.1", "3.0", "3.1", "3.2", "4.0", "5.0", "6.0"]
     <<: *common
     stage: lint
     script:
@@ -53,7 +56,7 @@ clippy:
 test:
     parallel:
         matrix:
-            - VERSION: ["1.0", "1.1", "2.0", "2.1", "3.0", "3.1", "3.2", "4.0", "5.0"]
+            - VERSION: ["1.0", "1.1", "2.0", "2.1", "3.0", "3.1", "3.2", "4.0", "5.0", "6.0"]
     <<: *common
     stage: test
     script:
