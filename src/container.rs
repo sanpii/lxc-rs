@@ -799,7 +799,7 @@ impl std::fmt::Debug for Container {
                 } else {
                     $debug.field(stringify!($field), &crate::ffi::to_string($inner.$field));
                 }
-            }
+            };
         }
 
         macro_rules! field {
@@ -809,7 +809,7 @@ impl std::fmt::Debug for Container {
                 } else {
                     $debug.field(stringify!($field), &$inner.$field);
                 }
-            }
+            };
         }
 
         let mut debug = f.debug_struct("Container");
@@ -817,9 +817,7 @@ impl std::fmt::Debug for Container {
         if self.inner.is_null() {
             debug.field("inner", &"null");
         } else {
-            let inner = unsafe {
-                *self.inner
-            };
+            let inner = unsafe { *self.inner };
 
             field_str!(debug, inner.name);
             field_str!(debug, inner.configfile);
