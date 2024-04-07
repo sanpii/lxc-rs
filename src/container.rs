@@ -789,3 +789,51 @@ impl Drop for Container {
         }
     }
 }
+
+impl std::fmt::Debug for Container {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        macro_rules! field_str {
+            ($debug:ident, $inner:ident . $field:ident) => {
+                if $inner.$field.is_null() {
+                    $debug.field(stringify!($field), &Option::<&str>::None);
+                } else {
+                    $debug.field(stringify!($field), &crate::ffi::to_string($inner.$field));
+                }
+            }
+        }
+
+        macro_rules! field {
+            ($debug:ident, $inner:ident . $field:ident) => {
+                if $inner.$field.is_null() {
+                    $debug.field(stringify!($field), &Option::<&str>::None);
+                } else {
+                    $debug.field(stringify!($field), &$inner.$field);
+                }
+            }
+        }
+
+        let mut debug = f.debug_struct("Container");
+
+        if self.inner.is_null() {
+            debug.field("inner", &"null");
+        } else {
+            let inner = unsafe {
+                *self.inner
+            };
+
+            field_str!(debug, inner.name);
+            field_str!(debug, inner.configfile);
+            field_str!(debug, inner.pidfile);
+            field!(debug, inner.slock);
+            field!(debug, inner.privlock);
+            debug.field("numthreads", &inner.numthreads);
+            field!(debug, inner.lxc_conf);
+            field_str!(debug, inner.error_string);
+            debug.field("error_num", &inner.error_num);
+            debug.field("daemonize", &inner.daemonize);
+            field_str!(debug, inner.config_path);
+        }
+
+        debug.finish()
+    }
+}
