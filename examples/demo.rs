@@ -4,7 +4,7 @@ fn main() {
 
     if !c.is_defined() {
         c.create(
-            "download",
+            Some("download"),
             None,
             None,
             lxc::CreateFlags::QUIET,

@@ -11,7 +11,7 @@ fn main() -> std::io::Result<()> {
     }
 
     c.create(
-        "download",
+        Some("download"),
         None,
         None,
         ::lxc::CreateFlags::QUIET,

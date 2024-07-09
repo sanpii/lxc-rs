@@ -291,7 +291,7 @@ impl Container {
      */
     pub fn create(
         &self,
-        template: &str,
+        template: Option<&str>,
         bdevtype: Option<&str>,
         specs: Option<&mut lxc_sys::bdev_specs>,
         flags: crate::CreateFlags,
@@ -307,7 +307,10 @@ impl Container {
 
         call!(
             self.create(
-                cstr!(template),
+                match template {
+                    Some(value) => cstr!(value),
+                    None => null(),
+                },
                 match bdevtype {
                     Some(value) => cstr!(value),
                     None => null(),

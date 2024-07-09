@@ -16,7 +16,7 @@ fn main() {
         lxc::Container::new("apicontainer", None).expect("Failed to setup lxc_container struct");
 
     c.create(
-        "download",
+        Some("download"),
         None,
         None,
         lxc::CreateFlags::QUIET,
