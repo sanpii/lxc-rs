@@ -199,7 +199,7 @@ impl Container {
      * Thaw a frozen container.
      */
     pub fn unfreeze(&self) -> crate::Result {
-        call!(self.freeze() -> bool)
+        call!(self.unfreeze() -> bool)
     }
 
     /**
