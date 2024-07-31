@@ -1,0 +1,63 @@
+#!/bin/sh
+
+set -eu
+
+SUDO=$(which sudo || echo '')
+
+main()
+{
+    if [ $# -lt 1 ]
+    then
+        err "Missing argument"
+    fi
+
+    local action=$1
+    shift
+
+    eval "$action $*"
+}
+
+err()
+{
+    >&2 echo $*
+    exit 1
+}
+
+lxc()
+{
+    if [ $# -lt 1 ]
+    then
+        err "Missing argument"
+    fi
+
+    local version=$1
+
+    $SUDO apt update
+    $SUDO apt install lxc-dev clang meson systemd libdbus-1-dev -y
+    git clone https://github.com/lxc/lxc.git
+    cd lxc
+    case "$version" in
+        "6.0")
+            tag="v6.0.0"
+            ;;
+        "5.0")
+            tag="lxc-5.0.3"
+            ;;
+        *)
+            tag="lxc-$version.0"
+            ;;
+    esac
+    git checkout "$tag"
+    if [ $(echo "$version" | cut -d. -f1) -ge 5 ]
+    then
+        meson setup -Dprefix=/usr -Dman=false build
+        meson compile -C build
+        $SUDO meson install -C build
+    else
+        ./autogen.sh
+        ./configure
+        $SUDO cp src/lxc/attach_options.h src/lxc/lxccontainer.h src/lxc/version.h /usr/include/lxc
+    fi
+}
+
+main $*
