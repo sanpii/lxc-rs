@@ -1,5 +1,6 @@
 #[cfg(feature = "v3_0")]
 bitflags::bitflags! {
+    #[derive(Default)]
     pub struct AttchFlags: i32 {
         /** Move to cgroup. */
         const MOVE_TO_CGROUP = lxc_sys::LXC_ATTACH_MOVE_TO_CGROUP as i32;
@@ -22,6 +23,7 @@ bitflags::bitflags! {
 
 #[cfg(not(feature = "v3_0"))]
 bitflags::bitflags! {
+    #[derive(Default)]
     pub struct AttchFlags: i32 {
         /** Move to cgroup. */
         const MOVE_TO_CGROUP = lxc_sys::LXC_ATTACH_MOVE_TO_CGROUP as i32;
@@ -40,6 +42,7 @@ bitflags::bitflags! {
 }
 
 bitflags::bitflags! {
+    #[derive(Default)]
     pub struct CloneFlags: i32 {
         /** Use the same bdev type. */
         const KEEPBDEVTYPE = lxc_sys::LXC_CLONE_KEEPBDEVTYPE as i32;
@@ -57,6 +60,7 @@ bitflags::bitflags! {
 }
 
 bitflags::bitflags! {
+    #[derive(Default)]
     pub struct CreateFlags: i32 {
         /** Redirect stdin to `/dev/zero` and stdout and stderr to `/dev/null`. */
         const QUIET = lxc_sys::LXC_CREATE_QUIET as i32;
