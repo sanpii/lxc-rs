@@ -440,7 +440,7 @@ impl Container {
     }
 
     /**
-     * Determine full path to the containers configuration file.
+     * Determine full path to the containers configuration directory.
      *
      * Each container can have a custom configuration path. However by default
      * it will be set to either the `LXCPATH` configure variable, or the
@@ -455,7 +455,7 @@ impl Container {
     }
 
     /**
-     * Set the full path to the containers configuration file.
+     * Set the full path to the containers configuration directory.
      */
     pub fn set_config_path(&self, path: &str) -> crate::Result {
         call!(self.set_config_path(cstr!(path)) -> bool)
