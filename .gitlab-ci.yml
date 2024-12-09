@@ -19,7 +19,7 @@ clippy:
     before_script: ./ci lxc $VERSION
     script:
         - rustup component add clippy
-        - cargo clippy --features="v${VERSION/./_}"
+        - cargo clippy --all-targets --features="v${VERSION/./_}"
 
 test:
     parallel:

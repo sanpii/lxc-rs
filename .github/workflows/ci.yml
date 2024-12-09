@@ -35,7 +35,7 @@ jobs:
         run: |
           ./ci lxc ${{ matrix.version }}
           VERSION=$(echo ${{ matrix.version }} | sed 's/\./_/')
-          cargo clippy --features="v${VERSION}" -- --deny warnings
+          cargo clippy --all-targets --features="v${VERSION}" -- --deny warnings
 
   tests:
     name: Tests
