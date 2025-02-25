@@ -543,7 +543,7 @@ impl Container {
         program: &str,
         argv: &[&str],
     ) -> crate::Result<i32> {
-        let mut argv: Vec<*const i8> = argv.iter().map(|e| cstr!(*e)).collect();
+        let mut argv: Vec<*const i8> = argv.iter().map(|e| cstr!(*e) as *const i8).collect();
         argv.push(null());
 
         let pid = call!(self.attach_run_wait(options, cstr!(program), argv.as_ptr()));

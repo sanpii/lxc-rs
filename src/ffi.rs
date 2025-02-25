@@ -6,7 +6,7 @@ pub fn to_cstr(s: &str) -> std::ffi::CString {
 
 macro_rules! cstr {
     ( $s:expr ) => {
-        $crate::ffi::to_cstr($s).as_ptr()
+        $crate::ffi::to_cstr($s).into_raw()
     };
 }
 
