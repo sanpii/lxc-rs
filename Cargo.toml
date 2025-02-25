@@ -1,6 +1,9 @@
 [workspace]
 members = ["lxc-sys"]
 
+[workspace.package]
+edition = "2024"
+
 [package]
 name = "lxc"
 version = "0.8.0"
@@ -11,7 +14,7 @@ keywords = ["lxc"]
 license = "MIT"
 categories = ["api-bindings"]
 description = "Linux Containers API"
-edition = "2021"
+edition.workspace = true
 
 [dependencies]
 bitflags = "2.0"
