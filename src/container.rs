@@ -4,9 +4,7 @@ use crate::ffi::to_mut_cstr;
 use std::ptr::{null, null_mut};
 
 macro_rules! get {
-    ( $container:ident . $prop:ident ) => {{
-        unsafe { (*$container.inner).$prop }
-    }};
+    ( $container:ident . $prop:ident ) => {{ unsafe { (*$container.inner).$prop } }};
 
     ( $container:ident . $prop:ident -> c_str ) => {{
         let result = get!($container.$prop);

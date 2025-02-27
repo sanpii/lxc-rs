@@ -2,9 +2,7 @@ use lxc_sys::lxc_container;
 use std::ptr::{null, null_mut};
 
 macro_rules! str {
-    ($e:expr) => {{
-        std::ffi::CString::new($e).unwrap()
-    }};
+    ($e:expr) => {{ std::ffi::CString::new($e).unwrap() }};
 }
 
 fn main() {
