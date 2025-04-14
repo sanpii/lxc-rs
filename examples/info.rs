@@ -1,9 +1,6 @@
 fn main() -> lxc::Result {
     println!("LXC version: {}", lxc::version());
-    println!(
-        "LXC path: {}",
-        lxc::get_lxc_path().unwrap_or("?".to_string()),
-    );
+    println!("LXC path: {}", lxc::path().unwrap_or("?".to_string()),);
     println!();
 
     let path = "/var/lib/lxc";

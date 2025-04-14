@@ -264,6 +264,6 @@ pub fn list_defined_containers(path: &str) -> Result<Vec<String>> {
  *   - `None`         - If the global configuration item is not found or its value is empty,
  *     the function returns `None`.
  */
-pub fn get_lxc_path() -> Option<String> {
+pub fn path() -> Option<String> {
     get_global_config_item("lxc.lxcpath")
 }
