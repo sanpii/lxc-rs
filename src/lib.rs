@@ -106,7 +106,7 @@ pub fn config_item_is_supported(key: &str) -> bool {
  * provided `path` is a valid directory path and that the LXC library is properly initialized.
  */
 pub fn list_active_containers(path: &str) -> Result<Vec<String>> {
-    let mut containers = vec![];
+    let mut containers = Vec::new();
 
     match unsafe {
         lxc_sys::list_active_containers(cstr!(path), std::ptr::null_mut(), std::ptr::null_mut())
@@ -162,7 +162,7 @@ pub fn list_active_containers(path: &str) -> Result<Vec<String>> {
  * provided `path` is a valid directory path and that the LXC library is properly initialized.
  */
 pub fn list_all_containers(path: &str) -> Result<Vec<String>> {
-    let mut containers = vec![];
+    let mut containers = Vec::new();
 
     let size = unsafe {
         lxc_sys::list_all_containers(cstr!(path), std::ptr::null_mut(), std::ptr::null_mut())
@@ -217,7 +217,7 @@ pub fn list_all_containers(path: &str) -> Result<Vec<String>> {
  * provided `path` is a valid directory path and that the LXC library is properly initialized.
  */
 pub fn list_defined_containers(path: &str) -> Result<Vec<String>> {
-    let mut containers = vec![];
+    let mut containers = Vec::new();
 
     match unsafe {
         lxc_sys::list_defined_containers(cstr!(path), std::ptr::null_mut(), std::ptr::null_mut())
