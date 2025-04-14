@@ -13,7 +13,7 @@ pub enum Level {
 
 impl From<Level> for String {
     fn from(level: Level) -> Self {
-        use self::Level::*;
+        use Level::*;
 
         let s = match level {
             Trace => "TRACE",

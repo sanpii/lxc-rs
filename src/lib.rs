@@ -6,13 +6,14 @@ mod ffi;
 pub mod attach;
 mod console;
 mod container;
+pub mod containers;
 mod flags;
 pub mod log;
 mod migrate;
 
-pub use self::container::Container;
-pub use self::flags::{AttchFlags, CloneFlags, CreateFlags};
-pub use self::log::Log;
+pub use container::Container;
+pub use flags::{AttchFlags, CloneFlags, CreateFlags};
+pub use log::Log;
 
 pub use lxc_sys::lxc_conf as Conf;
 pub use lxc_sys::lxc_lock as Lock;
@@ -58,7 +59,7 @@ pub fn wait_states() -> Vec<String> {
 
     unsafe { lxc_sys::lxc_get_wait_states(states.as_mut_ptr()) };
 
-    states.iter().map(|e| self::ffi::to_string(*e)).collect()
+    states.iter().map(|e| ffi::to_string(*e)).collect()
 }
 
 /**
@@ -71,7 +72,7 @@ pub fn get_global_config_item(key: &str) -> Option<String> {
     if value.is_null() {
         None
     } else {
-        Some(self::ffi::to_string(value))
+        Some(ffi::to_string(value))
     }
 }
 
@@ -83,14 +84,20 @@ pub fn config_item_is_supported(key: &str) -> bool {
     unsafe { lxc_sys::lxc_config_item_is_supported(cstr!(key)) }
 }
 
-pub fn list_active_containers() {
-    unimplemented!();
-}
-
-pub fn list_all_containers() {
-    unimplemented!();
-}
-
-pub fn list_defined_containers() {
-    unimplemented!();
+/**
+ * Retrieves the default path where LXC containers are stored.
+ *
+ * This function retrieves the value of the global configuration item "lxc.lxcpath".
+ * The returned path is used as the root directory for managing LXC containers.
+ *
+ * # Return
+ *
+ * * `Option<String>` - Returns an `Option` containing a string representing the LXC path.
+ *   - `Some(String)` - If the global configuration item is found and its value is not empty,
+ *     the function returns `Some` containing the LXC path.
+ *   - `None`         - If the global configuration item is not found or its value is empty,
+ *     the function returns `None`.
+ */
+pub fn path() -> Option<String> {
+    get_global_config_item("lxc.lxcpath")
 }

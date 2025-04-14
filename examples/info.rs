@@ -1,13 +1,19 @@
-fn main() {
+fn main() -> lxc::Result {
     println!("LXC version: {}", lxc::version());
-    println!(
-        "LXC path: {}",
-        lxc::get_global_config_item("lxc.lxcpath").unwrap_or("?".to_string())
-    );
+    println!("LXC path: {}", lxc::path().unwrap_or("?".to_string()),);
+    println!();
+
+    let path = "/var/lib/lxc";
+    println!("All containers in path '{path}':");
+    for container in lxc::containers::all(path)? {
+        println!("- {container}");
+    }
     println!();
 
     println!("Wait states:");
     for state in lxc::wait_states() {
-        println!("- {}", state);
+        println!("- {state}");
     }
+
+    Ok(())
 }
