@@ -1,12 +1,12 @@
 mod level;
 
-pub use self::level::Level;
+pub use level::Level;
 
 pub struct Log {
     pub name: String,
     pub lxcpath: String,
     pub file: String,
-    pub level: self::Level,
+    pub level: Level,
     pub prefix: String,
     pub quiet: bool,
 }
