@@ -5,7 +5,7 @@ fn main() -> lxc::Result {
 
     let path = "/var/lib/lxc";
     println!("All containers in path '{path}':");
-    for container in lxc::list_all_containers(path)? {
+    for container in lxc::containers::all(path)? {
         println!("- {container}");
     }
     println!();
