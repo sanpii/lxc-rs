@@ -83,154 +83,187 @@ pub fn config_item_is_supported(key: &str) -> bool {
     unsafe { lxc_sys::lxc_config_item_is_supported(cstr!(key)) }
 }
 
-/// Lists all active containers within the specified directory path.
-///
-/// # Parameters
-///
-/// * `path` - A reference to a string representing the directory path where the containers are located.
-///
-/// # Return
-///
-/// * `Result<Vec<String>>` - Returns a `Result` containing a vector of strings representing the names of the active containers.
-///   - `Ok(Vec<String>)`   - If the operation is successful, the vector contains the names of the active containers.
-///   - `Err(Error)`        - If an error occurs during the operation, an `Error` instance is returned.
-///
-/// # Errors
-///
-/// * If the function fails to list all active containers, it returns an `Error` with a description of the failure.
-///
-/// # Safety
-///
-/// This function uses unsafe Rust code to interact with the LXC library. It is important to ensure that the
-/// provided `path` is a valid directory path and that the LXC library is properly initialized.
-pub fn list_active_containers( path: &str ) -> Result<Vec<String>> {
+/**
+ * Lists all active containers within the specified directory path.
+ *
+ * # Parameters
+ *
+ * * `path` - A reference to a string representing the directory path where the containers are located.
+ *
+ * # Return
+ *
+ * * `Result<Vec<String>>` - Returns a `Result` containing a vector of strings representing the names of the active containers.
+ *   - `Ok(Vec<String>)`   - If the operation is successful, the vector contains the names of the active containers.
+ *   - `Err(Error)`        - If an error occurs during the operation, an `Error` instance is returned.
+ *
+ * # Errors
+ *
+ * * If the function fails to list all active containers, it returns an `Error` with a description of the failure.
+ *
+ * # Safety
+ *
+ * This function uses unsafe Rust code to interact with the LXC library. It is important to ensure that the
+ * provided `path` is a valid directory path and that the LXC library is properly initialized.
+ */
+pub fn list_active_containers(path: &str) -> Result<Vec<String>> {
     let mut containers = vec![];
-    
-    match unsafe { lxc_sys::list_active_containers( cstr!( path ), std::ptr::null_mut(), std::ptr::null_mut() ) as i32 } {
-        error if error < 0 => return Err( Error { num: 0, str: "Failed to list active containers".to_string() } ),
-        size  if size  > 0 => {
-            unsafe { 
+
+    match unsafe {
+        lxc_sys::list_active_containers(cstr!(path), std::ptr::null_mut(), std::ptr::null_mut())
+            as i32
+    } {
+        error if error < 0 => {
+            return Err(Error {
+                num: 0,
+                str: "Failed to list active containers".to_string(),
+            });
+        }
+        size if size > 0 => {
+            unsafe {
                 let mut p_list: *mut *mut i8 = std::ptr::null_mut();
-    
-                lxc_sys::list_active_containers( cstr!( path ), &mut p_list, std::ptr::null_mut() );
-    
+
+                lxc_sys::list_active_containers(cstr!(path), &mut p_list, std::ptr::null_mut());
+
                 for i in 0..size {
-                    let r: *mut i8 = *p_list.add( i as usize );
-                    containers.push( self::ffi::to_string( r ) );
-                  
-                    lxc_sys::free( r as *mut core::ffi::c_void );
+                    let r: *mut i8 = *p_list.add(i as usize);
+                    containers.push(self::ffi::to_string(r));
+
+                    lxc_sys::free(r as *mut core::ffi::c_void);
                 }
-                lxc_sys::free( p_list as *mut core::ffi::c_void );
+                lxc_sys::free(p_list as *mut core::ffi::c_void);
             };
-        },
-        _                  => (), // No containers found
+        }
+        _ => (), // No containers found
     }
-    Ok( containers )
+
+    Ok(containers)
 }
 
-/// Lists all containers within the specified directory path.
-///
-/// # Parameters
-///
-/// * `path` - A reference to a string representing the directory path where the containers are located.
-///
-/// # Return
-///
-/// * `Result<Vec<String>>` - Returns a `Result` containing a vector of strings representing the names of the containers.
-///   - `Ok(Vec<String>)`   - If the operation is successful, the vector contains the names of the containers.
-///   - `Err(Error)`        - If an error occurs during the operation, an `Error` instance is returned.
-///
-/// # Errors
-///
-/// * If the function fails to list all containers, it returns an `Error` with a description of the failure.
-///
-/// # Safety
-///
-/// This function uses unsafe Rust code to interact with the LXC library. It is important to ensure that the
-/// provided `path` is a valid directory path and that the LXC library is properly initialized.
-pub fn list_all_containers( path: &str ) -> Result<Vec<String>> {
+/**
+ * Lists all containers within the specified directory path.
+ *
+ * # Parameters
+ *
+ * * `path` - A reference to a string representing the directory path where the containers are located.
+ *
+ * # Return
+ *
+ * * `Result<Vec<String>>` - Returns a `Result` containing a vector of strings representing the names of the containers.
+ *   - `Ok(Vec<String>)`   - If the operation is successful, the vector contains the names of the containers.
+ *   - `Err(Error)`        - If an error occurs during the operation, an `Error` instance is returned.
+ *
+ * # Errors
+ *
+ * * If the function fails to list all containers, it returns an `Error` with a description of the failure.
+ *
+ * # Safety
+ *
+ * This function uses unsafe Rust code to interact with the LXC library. It is important to ensure that the
+ * provided `path` is a valid directory path and that the LXC library is properly initialized.
+ */
+pub fn list_all_containers(path: &str) -> Result<Vec<String>> {
     let mut containers = vec![];
-    
-    let size = unsafe { lxc_sys::list_all_containers( cstr!( path ), std::ptr::null_mut(), std::ptr::null_mut() ) };
+
+    let size = unsafe {
+        lxc_sys::list_all_containers(cstr!(path), std::ptr::null_mut(), std::ptr::null_mut())
+    };
+
     if size < 0 {
-        return Err( Error { num: size, str: "Failed to list all containers".to_string() } );
+        return Err(Error {
+            num: size,
+            str: "Failed to list all containers".to_string(),
+        });
     }
+
     if size > 0 {
-        unsafe { 
+        unsafe {
             let mut p_list: *mut *mut i8 = std::ptr::null_mut();
 
-            lxc_sys::list_all_containers( cstr!( path ), &mut p_list, std::ptr::null_mut() );
+            lxc_sys::list_all_containers(cstr!(path), &mut p_list, std::ptr::null_mut());
 
             for i in 0..size {
-                let r: *mut i8 = *p_list.add( i as usize );
-                containers.push( self::ffi::to_string( r ) );
-              
-                lxc_sys::free( r as *mut core::ffi::c_void );
+                let r: *mut i8 = *p_list.add(i as usize);
+                containers.push(self::ffi::to_string(r));
+
+                lxc_sys::free(r as *mut core::ffi::c_void);
             }
-            lxc_sys::free( p_list as *mut core::ffi::c_void );
+            lxc_sys::free(p_list as *mut core::ffi::c_void);
         };
     }
-    Ok( containers )
+
+    Ok(containers)
 }
 
-/// Lists all defined containers within the specified directory path.
-///
-/// # Parameters
-///
-/// * `path` - A reference to a string representing the directory path where the containers are located.
-///
-/// # Return
-///
-/// * `Result<Vec<String>>` - Returns a `Result` containing a vector of strings representing the names of the defined containers.
-///   - `Ok(Vec<String>)`   - If the operation is successful, the vector contains the names of the defined containers.
-///   - `Err(Error)`        - If an error occurs during the operation, an `Error` instance is returned.
-///
-/// # Errors
-///
-/// * If the function fails to list all containers, it returns an `Error` with a description of the failure.
-///
-/// # Safety
-///
-/// This function uses unsafe Rust code to interact with the LXC library. It is important to ensure that the
-/// provided `path` is a valid directory path and that the LXC library is properly initialized.
-
-pub fn list_defined_containers( path: &str ) -> Result<Vec<String>> {
+/**
+ * Lists all defined containers within the specified directory path.
+ *
+ * # Parameters
+ *
+ * * `path` - A reference to a string representing the directory path where the containers are located.
+ *
+ * # Return
+ *
+ * * `Result<Vec<String>>` - Returns a `Result` containing a vector of strings representing the names of the defined containers.
+ *   - `Ok(Vec<String>)`   - If the operation is successful, the vector contains the names of the defined containers.
+ *   - `Err(Error)`        - If an error occurs during the operation, an `Error` instance is returned.
+ *
+ * # Errors
+ *
+ * * If the function fails to list all containers, it returns an `Error` with a description of the failure.
+ *
+ * # Safety
+ *
+ * This function uses unsafe Rust code to interact with the LXC library. It is important to ensure that the
+ * provided `path` is a valid directory path and that the LXC library is properly initialized.
+ */
+pub fn list_defined_containers(path: &str) -> Result<Vec<String>> {
     let mut containers = vec![];
-    
-    match unsafe { lxc_sys::list_defined_containers( cstr!( path ), std::ptr::null_mut(), std::ptr::null_mut() ) as i32 } {
-        error if error < 0 => return Err( Error { num: 0, str: "Failed to list defined containers".to_string() } ),
-        size  if size  > 0 => {
-            unsafe { 
+
+    match unsafe {
+        lxc_sys::list_defined_containers(cstr!(path), std::ptr::null_mut(), std::ptr::null_mut())
+            as i32
+    } {
+        error if error < 0 => {
+            return Err(Error {
+                num: 0,
+                str: "Failed to list defined containers".to_string(),
+            });
+        }
+        size if size > 0 => {
+            unsafe {
                 let mut p_list: *mut *mut i8 = std::ptr::null_mut();
-    
-                lxc_sys::list_defined_containers( cstr!( path ), &mut p_list, std::ptr::null_mut() );
-    
+
+                lxc_sys::list_defined_containers(cstr!(path), &mut p_list, std::ptr::null_mut());
+
                 for i in 0..size {
-                    let r: *mut i8 = *p_list.add( i as usize );
-                    containers.push( self::ffi::to_string( r ) );
-                  
-                    lxc_sys::free( r as *mut core::ffi::c_void );
+                    let r: *mut i8 = *p_list.add(i as usize);
+                    containers.push(self::ffi::to_string(r));
+
+                    lxc_sys::free(r as *mut core::ffi::c_void);
                 }
-                lxc_sys::free( p_list as *mut core::ffi::c_void );
+                lxc_sys::free(p_list as *mut core::ffi::c_void);
             };
-        },
-        _                  => (), // No containers found
+        }
+        _ => (), // No containers found
     }
-    Ok( containers )
+
+    Ok(containers)
 }
 
-/// Retrieves the default path where LXC containers are stored.
-///
-/// This function retrieves the value of the global configuration item "lxc.lxcpath".
-/// The returned path is used as the root directory for managing LXC containers.
-///
-/// # Return
-///
-/// * `Option<String>` - Returns an `Option` containing a string representing the LXC path.
-///   - `Some(String)` - If the global configuration item is found and its value is not empty,
-///                      the function returns `Some` containing the LXC path.
-///   - `None`         - If the global configuration item is not found or its value is empty,
-///                      the function returns `None`.
+/**
+ * Retrieves the default path where LXC containers are stored.
+ *
+ * This function retrieves the value of the global configuration item "lxc.lxcpath".
+ * The returned path is used as the root directory for managing LXC containers.
+ *
+ * # Return
+ *
+ * * `Option<String>` - Returns an `Option` containing a string representing the LXC path.
+ *   - `Some(String)` - If the global configuration item is found and its value is not empty,
+ *     the function returns `Some` containing the LXC path.
+ *   - `None`         - If the global configuration item is not found or its value is empty,
+ *     the function returns `None`.
+ */
 pub fn get_lxc_path() -> Option<String> {
-    return get_global_config_item( "lxc.lxcpath" );
+    get_global_config_item("lxc.lxcpath")
 }
